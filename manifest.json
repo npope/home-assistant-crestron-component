@@ -1,0 +1,8 @@
+{
+  "domain": "crestron",
+  "name": "Crestron XSIG Integraton",
+  "documentation": "",
+  "dependencies": [],
+  "codeowners": [],
+  "requirements": []
+}
