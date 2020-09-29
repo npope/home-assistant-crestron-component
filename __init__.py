@@ -14,7 +14,7 @@ _LOGGER = logging.getLogger(__name__)
 
 DOMAIN='crestron'
 
-PLATFORMS = ["binary_sensor", "sensor", "switch", "light", "climate", "cover"]
+PLATFORMS = ["binary_sensor", "sensor", "switch", "light", "climate", "cover", "media_player"]
 
 async def async_setup(hass, config):
     """Set up a the crestron component."""
