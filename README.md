@@ -65,7 +65,7 @@ cover:
     is_closed_join: 44
 ```
 
-###Binary Sensor
+### Binary Sensor
 
 ```yaml
 binary_sensor:
@@ -75,7 +75,7 @@ binary_sensor:
     device_class: power
 ```
 
-###Sensor
+### Sensor
 
 ```yaml
 sensor:
@@ -87,7 +87,7 @@ sensor:
     divisor: 10
 ```
 
-###Switch
+### Switch
 
 ```yaml
 switch:
