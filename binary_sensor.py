@@ -28,7 +28,7 @@ class CrestronBinarySensor(Entity):
 
     @property
     def available(self):
-        return self._hub.available
+        return self._hub.is_available()
 
     @property
     def name(self):
@@ -40,4 +40,4 @@ class CrestronBinarySensor(Entity):
 
     @property
     def state(self):
-        return self._hub.digital[self._join]
+        return self._hub.get_digital(self._join)

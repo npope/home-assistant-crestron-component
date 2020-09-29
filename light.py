@@ -29,7 +29,7 @@ class CrestronLight(LightEntity):
 
     @property
     def available(self):
-        return self._hub.available
+        return self._hub.is_available()
 
     @property
     def name(self):
@@ -46,12 +46,12 @@ class CrestronLight(LightEntity):
     @property
     def brightness(self):
         if self._supported_features == SUPPORT_BRIGHTNESS:
-            return int(self._hub.analog[self._brightness_join]/255)
+            return int(self._hub.get_analog(self._brightness_join)/255)
 
     @property
     def is_on(self):
         if self._supported_features == SUPPORT_BRIGHTNESS:
-            if int(self._hub.analog[self._brightness_join]/255) > 0:
+            if int(self._hub.get_analog(self._brightness_join)/255) > 0:
                 return True
             else:
                 return False

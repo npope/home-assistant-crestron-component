@@ -34,16 +34,20 @@ class CrestronSensor(Entity):
 
     @property
     def available(self):
-        return self._hub.available
+        return self._hub.is_available()
 
     @property
     def name(self):
         return self._name
 
     @property
+    def should_poll(self):
+        return False
+
+    @property
     def state(self):
         if self._join in self._hub.analog:
-            return self._hub.analog[self._join]/self._divisor
+            return self._hub.get_analog(self._join)/self._divisor
         else:
             return 0
 

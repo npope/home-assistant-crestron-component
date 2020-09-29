@@ -59,7 +59,7 @@ class CrestronThermostat(ClimateEntity):
 
     @property
     def available(self):
-        return self._hub.available
+        return self._hub.is_available()
 
     @property
     def name(self):
@@ -87,41 +87,41 @@ class CrestronThermostat(ClimateEntity):
 
     @property
     def current_temperature(self):
-        return self._hub.analog[self._reg_temp_join]/10
+        return self._hub.get_analog(self._reg_temp_join)/10
 
     @property
     def target_temperature_high(self):
-        return self._hub.analog[self._cool_sp_join]/10
+        return self._hub.get_analog(self._cool_sp_join)/10
 
     @property
     def target_temperature_low(self):
-        return self._hub.analog[self._heat_sp_join]/10
+        return self._hub.get_analog(self._heat_sp_join)/10
 
     @property
     def hvac_mode(self):
-        if self._hub.digital[self._mode_auto_join]:
+        if self._hub.get_digital(self._mode_auto_join):
             return HVAC_MODE_HEAT_COOL
-        if self._hub.digital[self._mode_heat_join]:
+        if self._hub.get_digital(self._mode_heat_join):
             return HVAC_MODE_HEAT
-        if self._hub.digital[self._mode_cool_join]:
+        if self._hub.get_digital(self._mode_cool_join):
             return HVAC_MODE_COOL
-        if self._hub.digital[self._mode_off_join]:
+        if self._hub.get_digital(self._mode_off_join):
             return HVAC_MODE_OFF
 
     @property
     def fan_mode(self):
-        if self._hub.digital[self._fan_auto_join]:
+        if self._hub.get_digital(self._fan_auto_join):
             return FAN_AUTO
-        if self._hub.digital[self._fan_on_join]:
+        if self._hub.get_digital(self._fan_on_join):
             return FAN_ON
 
     @property
     def hvac_action(self):
-        if self._hub.digital[self._h1_join]:
+        if self._hub.get_digital(self._h1_join):
             return CURRENT_HVAC_HEAT
-        elif self._hub.digital[self._h2_join]:
+        elif self._hub.get_digital(self._h2_join):
             return CURRENT_HVAC_HEAT
-        elif self._hub.digital[self._c1_join]:
+        elif self._hub.get_digital(self._c1_join):
             return CURRENT_HVAC_COOL
         else:
             return CURRENT_HVAC_IDLE

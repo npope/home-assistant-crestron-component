@@ -47,7 +47,11 @@ class CrestronSwitch(SwitchEntity):
 
     @property
     def state(self):
-         return self._hub.digital[self._switch_join]
+         return self._hub.get_digital(self._switch_join)
+
+    @property
+    def is_on(self):
+         return self._hub.get_digital(self._switch_join)
 
     async def async_turn_on(self, **kwargs):
         self._hub.set_digital(self._switch_join, True)

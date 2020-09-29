@@ -46,7 +46,7 @@ class CrestronShade(CoverEntity):
 
     @property
     def available(self):
-        return self._hub.available
+        return self._hub.is_available()
 
     @property
     def name(self):
@@ -66,19 +66,19 @@ class CrestronShade(CoverEntity):
 
     @property
     def current_cover_position(self):
-        return self._hub.analog[self._pos_join]/655.35
+        return self._hub.get_analog(self._pos_join)/655.35
 
     @property
     def is_opening(self):
-        return self._hub.digital[self._is_opening_join]
+        return self._hub.get_digital(self._is_opening_join)
 
     @property
     def is_closing(self):
-        return self._hub.digital[self._is_closing_join]
+        return self._hub.get_digital(self._is_closing_join)
 
     @property
     def is_closed(self):
-        return self._hub.digital[self._is_closed_join]
+        return self._hub.get_digital(self._is_closed_join)
 
     async def async_set_cover_position(self, **kwargs):
         self._hub.set_analog(self._pos_join, int(kwargs['position'])*655)
@@ -91,5 +91,6 @@ class CrestronShade(CoverEntity):
 
     async def async_stop_cover(self, **kwargs):
         self._hub.set_digital(self._stop_join, 1)
+        ## TODO: replace sleep with call_later
         await asyncio.sleep(0.2)
         self._hub.set_digital(self._stop_join, 0)

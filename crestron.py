@@ -10,12 +10,12 @@ class CrestronHub():
 
     def __init__(self):
         ''' Initialize CrestronHub object '''
-        self.digital = dict.fromkeys(range(255), False)
-        self.analog = dict.fromkeys(range(255), 0)
+        self._digital = {}
+        self._analog = {}
         self._writer = None
         self._callbacks = set()
         self._server = None
-        self.available = False
+        self._available = False
         for callback in self._callbacks:
             callback()
 
@@ -29,7 +29,7 @@ class CrestronHub():
 
     def stop(self):
         ''' Stop TCP XSIG server '''
-        self.available = False
+        self._available = False
         for callback in self._callbacks:
             callback()
         self._server.close()
@@ -50,7 +50,7 @@ class CrestronHub():
         _LOGGER.info(f'Control system connection from {peer}')
         _LOGGER.debug('Sending update request')
         writer.write(b'\xfd')
-        self.available = True
+        self._available = True
         for callback in self._callbacks:
             callback()
 
@@ -63,7 +63,7 @@ class CrestronHub():
                     unpack = struct.unpack('BB',data)
                     join = (unpack[1] | (unpack[0] & 0b00011111) << 7) + 1 
                     value = ~unpack[0] >> 5 & 0b1
-                    self.digital[join] = True if value==1 else False
+                    self._digital[join] = True if value==1 else False
                     _LOGGER.debug(f'Got Digital: {join} = {value}')
                     for callback in self._callbacks:
                         callback()
@@ -72,7 +72,7 @@ class CrestronHub():
                     unpack = struct.unpack('BBBB', data)
                     join = (unpack[1] | (unpack[0] & 0b00000111) << 7) + 1
                     value = unpack[3] | unpack[2] << 7 | (unpack[0] & 0b00110000) << 10
-                    self.analog[join] = value
+                    self._analog[join] = value
                     _LOGGER.debug(f'Got Analog: {join} = {value}')
                     for callback in self._callbacks:
                         callback()
@@ -81,10 +81,22 @@ class CrestronHub():
             else:
                 _LOGGER.info('Control system disconnected')
                 connected = False
-                self.available = False
+                self._available = False
                 for callback in self._callbacks:
                     callback()
-            
+
+    def is_available (self):
+        '''Returns True if control system is connected'''
+        return self._available
+
+    def get_analog (self, join):
+        ''' Return analog value for join'''
+        return self._analog.get(join, 0)
+
+    def get_digital (self, join):
+        ''' Return digital value for join'''
+        return self._digital.get(join, False)
+
     def set_analog (self, join, value):
         ''' Send Analog Join to Crestron XSIG symbol '''
         if self._writer:
