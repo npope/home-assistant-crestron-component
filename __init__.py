@@ -23,7 +23,7 @@ async def async_setup(hass, config):
     hub = crestron.CrestronHub()
     hass.data[DOMAIN]['hub'] = hub
 
-    hass.async_create_task(hub.start(const.PORT))
+    await hub.start(const.PORT)
     hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, hub.stop)
 
 
