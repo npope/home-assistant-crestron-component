@@ -26,6 +26,7 @@ class CrestronRoom(MediaPlayerEntity):
         self._device_class = "speaker"
         self._supported_features = SUPPORT_SELECT_SOURCE | SUPPORT_VOLUME_MUTE | SUPPORT_VOLUME_SET
         self._mute_join = config['mute_join']
+        self._volume_join = config['volume_join']
         self._source_number_join = config['source_number_join']
         self._source_list = config['source_list']
 
