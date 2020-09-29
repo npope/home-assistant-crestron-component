@@ -9,20 +9,30 @@ _LOGGER = logging.getLogger(__name__)
 class CrestronHub():
 
     def __init__(self):
+        ''' Initialize CrestronHub object '''
         self.digital = dict.fromkeys(range(255), False)
         self.analog = dict.fromkeys(range(255), 0)
         self._writer = None
         self._callbacks = set()
+        self._server = None
         self.available = False
         for callback in self._callbacks:
             callback()
 
-    async def listen(self, hass, port):
+    async def start(self, port):
         ''' Start TCP XSIG server listening on configured port '''
         server = await asyncio.start_server( self.handle_connection, '0.0.0.0', port)
+        self._server = server
         addr = server.sockets[0].getsockname()
-        _LOGGER.info(f'Listening on port {port}')
-        hass.async_create_task(server.serve_forever())
+        _LOGGER.info(f'Listening on {addr}:{port}')
+        server.serve_forever()
+
+    def stop(self):
+        ''' Stop TCP XSIG server '''
+        self.available = False
+        for callback in self._callbacks:
+            callback()
+        self._server.close()
 
     def register_callback(self, callback):
         ''' Allow callbacks to be registered for when dict entries change '''
@@ -37,7 +47,7 @@ class CrestronHub():
         ''' Parse packets from Crestron XSIG symbol '''
         self._writer = writer
         peer = writer.get_extra_info('peername')
-        _LOGGER.info(f'Connection from {peer}')
+        _LOGGER.info(f'Control system connection from {peer}')
         _LOGGER.debug('Sending update request')
         writer.write(b'\xfd')
         self.available = True
@@ -69,7 +79,7 @@ class CrestronHub():
                 else:
                     _LOGGER.debug(f'Unknown Packet: {data.hex()}')
             else:
-                _LOGGER.info('Client disconnected')
+                _LOGGER.info('Control system disconnected')
                 connected = False
                 self.available = False
                 for callback in self._callbacks:
