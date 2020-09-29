@@ -31,7 +31,7 @@ class CrestronSwitch(SwitchEntity):
 
     @property
     def available(self):
-        return self._hub.available
+        return self._hub.is_available()
 
     @property
     def name(self):

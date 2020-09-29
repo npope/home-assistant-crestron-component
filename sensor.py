@@ -46,10 +46,7 @@ class CrestronSensor(Entity):
 
     @property
     def state(self):
-        if self._join in self._hub.analog:
-            return self._hub.get_analog(self._join)/self._divisor
-        else:
-            return 0
+        return self._hub.get_analog(self._join)/self._divisor
 
     @property
     def device_class(self):
