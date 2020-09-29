@@ -24,8 +24,7 @@ class CrestronRoom(MediaPlayerEntity):
         self._hub = hub
         self._name = config['name']
         self._device_class = "speaker"
-        self._supported_features = SUPPORT_SELECT_SOURCE | SUPPORT_TURN_OFF | SUPPORT_TURN_ON | SUPPORT_VOLUME_MUTE | SUPPORT_VOLUME_SET
-        self._power_join = config['power_join']
+        self._supported_features = SUPPORT_SELECT_SOURCE | SUPPORT_VOLUME_MUTE | SUPPORT_VOLUME_SET
         self._mute_join = config['mute_join']
         self._source_number_join = config['source_number_join']
         self._source_list = config['source_list']
@@ -66,26 +65,12 @@ class CrestronRoom(MediaPlayerEntity):
          return self._source_list[source_num]
 
     @property
-    def state(self):
-         return self._hub.get_digital(self._power_join)
-
-    @property
-    def is_on(self):
-         return self._hub.get_digital(self._power_join)
-
-    @property
     def is_volume_muted(self):
          return self._hub.get_digital(self._mute_join)
 
     @property
     def volume_level(self):
          return self._hub.get_analog(self._volume_join)/65535
-
-    async def async_turn_on(self):
-        self._hub.set_digital(self._power_join, True)
-
-    async def async_turn_off(self):
-        self._hub.set_digital(self._power_join, False)
 
     async def async_mute_volume(self, mute):
         self._hub.set_digital(self._mute_join, mute)
