@@ -7,6 +7,8 @@ from homeassistant.components.media_player import (MediaPlayerEntity ,
     SUPPORT_VOLUME_MUTE,
     SUPPORT_VOLUME_SET)
 
+from homeassistant.const import STATE_ON, STATE_OFF
+
 import logging
 
 DOMAIN='crestron'
@@ -24,11 +26,12 @@ class CrestronRoom(MediaPlayerEntity):
         self._hub = hub
         self._name = config['name']
         self._device_class = "speaker"
-        self._supported_features = SUPPORT_SELECT_SOURCE | SUPPORT_VOLUME_MUTE | SUPPORT_VOLUME_SET
+        self._supported_features = SUPPORT_SELECT_SOURCE | SUPPORT_VOLUME_MUTE | SUPPORT_VOLUME_SET | SUPPORT_TURN_OFF
         self._mute_join = config['mute_join']
         self._volume_join = config['volume_join']
         self._source_number_join = config['source_number_join']
         self._source_list = config['source_list']
+        _LOGGER.debug(f'media player source list {self._source_list.values()}')
 
     async def async_added_to_hass(self):
         self._hub.register_callback(self.async_write_ha_state)
@@ -63,7 +66,17 @@ class CrestronRoom(MediaPlayerEntity):
     @property
     def source(self):
          source_num = self._hub.get_analog(self._source_number_join)
-         return self._source_list[source_num]
+         if source_num == 0:
+             return None
+         else:
+             return self._source_list[source_num]
+
+    @property
+    def state(self):
+        if self._hub.get_analog(self._source_number_join) == 0:
+            return STATE_OFF
+        else:
+            return STATE_ON
 
     @property
     def is_volume_muted(self):
@@ -80,6 +93,9 @@ class CrestronRoom(MediaPlayerEntity):
         self._hub.set_analog(self._volume_join, int(volume*65535))
 
     async def async_select_source(self, source):
-        for k,v in self._source_list:
+        for k,v in self._source_list.items():
             if v == source:
                 self._hub.set_analog(self._source_number_join, k)
+
+    async def async_turn_off(self):
+        self._hub.set_analog(self._source_number_join, 0)
