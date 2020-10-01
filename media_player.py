@@ -87,7 +87,6 @@ class CrestronRoom(MediaPlayerEntity):
          return self._hub.get_analog(self._volume_join)/65535
 
     async def async_mute_volume(self, mute):
-        _LOGGER.info(f'got mute {mute}')
         self._hub.set_digital(self._mute_join, mute)
 
     async def async_set_volume_level(self, volume):
