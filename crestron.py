@@ -79,7 +79,6 @@ class CrestronHub():
                         callback()
                 elif data[0] & 0b11111000 == 0b11001000 and data[1] & 0b10000000 == 0b00000000:
                     data += await reader.readuntil(b'\xff')
-                    _LOGGER.debug(f'Got serial join raw = {data}')
                     header = struct.unpack( 'BB', data[:2] )
                     join = (( header[0] & 0b00000111) << 7 | header[1]) + 1
                     string = data[2:-1].decode("utf-8")

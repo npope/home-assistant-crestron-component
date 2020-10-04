@@ -31,7 +31,6 @@ class CrestronRoom(MediaPlayerEntity):
         self._volume_join = config['volume_join']
         self._source_number_join = config['source_number_join']
         self._sources = dict(config['sources'])
-        _LOGGER.debug(f'media player source list {self._sources}')
 
     async def async_added_to_hass(self):
         self._hub.register_callback(self.async_write_ha_state)

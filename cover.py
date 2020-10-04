@@ -92,6 +92,4 @@ class CrestronShade(CoverEntity):
 
     async def async_stop_cover(self, **kwargs):
         self._hub.set_digital(self._stop_join, 1)
-        ## TODO: replace sleep with call_later
-        #await asyncio.sleep(0.2)
         call_later(self.hass, 0.2, self._hub.set_digital(self._stop_join, 0))
