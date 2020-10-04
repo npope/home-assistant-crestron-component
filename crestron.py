@@ -12,7 +12,7 @@ class CrestronHub():
         ''' Initialize CrestronHub object '''
         self._digital = {}
         self._analog = {}
-        self._string = {}
+        self._serial = {}
         self._writer = None
         self._callbacks = set()
         self._server = None
@@ -82,8 +82,8 @@ class CrestronHub():
                     _LOGGER.debug(f'Got serial join raw = {data}')
                     header = struct.unpack( 'BB', data[:2] )
                     join = (( header[0] & 0b00000111) << 7 | header[1]) + 1
-                    string = data[2:-1]
-                    self._string[join] = string
+                    string = data[2:-1].decode("utf-8")
+                    self._serial[join] = string
                     _LOGGER.debug(f'Got String: {join} = {string}')
                     for callback in self._callbacks:
                         callback()
