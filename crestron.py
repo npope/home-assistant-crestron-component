@@ -12,6 +12,7 @@ class CrestronHub():
         ''' Initialize CrestronHub object '''
         self._digital = {}
         self._analog = {}
+        self._string = {}
         self._writer = None
         self._callbacks = set()
         self._server = None
@@ -27,11 +28,12 @@ class CrestronHub():
         _LOGGER.info(f'Listening on {addr}:{port}')
         server.serve_forever()
 
-    def stop(self):
+    async def stop(self, event):
         ''' Stop TCP XSIG server '''
         self._available = False
         for callback in self._callbacks:
             callback()
+        _LOGGER.info('Stop called. Closing connection')
         self._server.close()
 
     def register_callback(self, callback):
@@ -56,24 +58,33 @@ class CrestronHub():
 
         connected = True
         while connected:
-            data = await reader.read(1)
+            data = await reader.read(2)
             if data:
-                if data[0] & 0b11000000 == 0b10000000:
-                    data += await reader.read(1)
-                    unpack = struct.unpack('BB',data)
-                    join = (unpack[1] | (unpack[0] & 0b00011111) << 7) + 1 
-                    value = ~unpack[0] >> 5 & 0b1
+                if data[0] & 0b11000000 == 0b10000000 and data[1] & 0b10000000 == 0b00000000:
+                    header = struct.unpack('BB',data)
+                    join = ((header[0] & 0b00011111) << 7 | header[1]) + 1 
+                    value = ~header[0] >> 5 & 0b1
                     self._digital[join] = True if value==1 else False
                     _LOGGER.debug(f'Got Digital: {join} = {value}')
                     for callback in self._callbacks:
                         callback()
-                elif data[0] & 0b11001000 == 0b11000000:
-                    data += await reader.read(3)
-                    unpack = struct.unpack('BBBB', data)
-                    join = (unpack[1] | (unpack[0] & 0b00000111) << 7) + 1
-                    value = unpack[3] | unpack[2] << 7 | (unpack[0] & 0b00110000) << 10
+                elif data[0] & 0b11001000 == 0b11000000 and data[1] & 0b10000000 == 0b00000000:
+                    data += await reader.read(2)
+                    header = struct.unpack('BBBB', data)
+                    join = ((header[0] & 0b00000111) << 7 | header[1]) + 1
+                    value = (header[0] & 0b00110000) << 10 | header[2] << 7 | header[3]
                     self._analog[join] = value
                     _LOGGER.debug(f'Got Analog: {join} = {value}')
+                    for callback in self._callbacks:
+                        callback()
+                elif data[0] & 0b11111000 == 0b11001000 and data[1] & 0b10000000 == 0b00000000:
+                    data += await reader.readuntil(b'\xff')
+                    _LOGGER.debug(f'Got serial join raw = {data}')
+                    header = struct.unpack( 'BB', data[:2] )
+                    join = (( header[0] & 0b00000111) << 7 | header[1]) + 1
+                    string = data[2:-1]
+                    self._string[join] = string
+                    _LOGGER.debug(f'Got String: {join} = {string}')
                     for callback in self._callbacks:
                         callback()
                 else:
@@ -97,6 +108,10 @@ class CrestronHub():
         ''' Return digital value for join'''
         return self._digital.get(join, False)
 
+    def get_serial (self, join):
+        ''' Return serial value for join'''
+        return self._serial.get(join, "")
+
     def set_analog (self, join, value):
         ''' Send Analog Join to Crestron XSIG symbol '''
         if self._writer:
@@ -117,3 +132,16 @@ class CrestronHub():
         else:
           _LOGGER.info('Could not send.  No connection to hub')
 
+    def set_serial (self, join, string):
+        ''' Send String Join to Crestron XSIG symbol '''
+        if len(string) > 252:
+            _LOGGER.info(f'Could not send. String too long ({len(string)}>252)')
+            return
+        elif self._writer:
+          data =  struct.pack('>BB', 0b11001000 | ( (join - 1) >> 7 ), (join - 1) & 0b01111111)
+          data += string
+          data += b'\xff'
+          self._writer.write(data)
+          _LOGGER.debug(f'Sending Serial: {join}, {value}')
+        else:
+          _LOGGER.info('Could not send.  No connection to hub')
