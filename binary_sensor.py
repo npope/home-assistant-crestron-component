@@ -21,10 +21,13 @@ class CrestronBinarySensor(Entity):
         self._device_class = config['device_class']
 
     async def async_added_to_hass(self):
-        self._hub.register_callback(self.async_write_ha_state)
+        self._hub.register_callback(self.process_callback)
 
     async def async_will_remove_from_hass(self):
-        self._hub.remove_callback(self.async_write_ha_state)
+        self._hub.remove_callback(self.process_callback)
+
+    async def process_callback(self, cbtype, value):
+        self.async_write_ha_state()
 
     @property
     def available(self):

@@ -17,8 +17,6 @@ class CrestronHub():
         self._callbacks = set()
         self._server = None
         self._available = False
-        for callback in self._callbacks:
-            callback()
 
     async def start(self, port):
         ''' Start TCP XSIG server listening on configured port '''
@@ -32,7 +30,7 @@ class CrestronHub():
         ''' Stop TCP XSIG server '''
         self._available = False
         for callback in self._callbacks:
-            callback()
+            await callback("available", "False")
         _LOGGER.info('Stop called. Closing connection')
         self._server.close()
 
@@ -54,7 +52,7 @@ class CrestronHub():
         writer.write(b'\xfd')
         self._available = True
         for callback in self._callbacks:
-            callback()
+            await callback("available", "True")
 
         connected = True
         while connected:
@@ -67,7 +65,7 @@ class CrestronHub():
                     self._digital[join] = True if value==1 else False
                     _LOGGER.debug(f'Got Digital: {join} = {value}')
                     for callback in self._callbacks:
-                        callback()
+                        await callback(f"d{join}", str(value))
                 elif data[0] & 0b11001000 == 0b11000000 and data[1] & 0b10000000 == 0b00000000:
                     data += await reader.read(2)
                     header = struct.unpack('BBBB', data)
@@ -76,7 +74,7 @@ class CrestronHub():
                     self._analog[join] = value
                     _LOGGER.debug(f'Got Analog: {join} = {value}')
                     for callback in self._callbacks:
-                        callback()
+                        await callback(f"a{join}", str(value))
                 elif data[0] & 0b11111000 == 0b11001000 and data[1] & 0b10000000 == 0b00000000:
                     data += await reader.readuntil(b'\xff')
                     header = struct.unpack( 'BB', data[:2] )
@@ -85,7 +83,7 @@ class CrestronHub():
                     self._serial[join] = string
                     _LOGGER.debug(f'Got String: {join} = {string}')
                     for callback in self._callbacks:
-                        callback()
+                        await callback(f"s{join}", string)
                 else:
                     _LOGGER.debug(f'Unknown Packet: {data.hex()}')
             else:
@@ -93,7 +91,7 @@ class CrestronHub():
                 connected = False
                 self._available = False
                 for callback in self._callbacks:
-                    callback()
+                    await callback("available", "False")
 
     def is_available (self):
         '''Returns True if control system is connected'''
