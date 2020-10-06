@@ -10,6 +10,11 @@ Currently supported devices:
   - Switch (any digital signal on the contol system - read / write)
   - Media Player (Can represent a multi-zone switcher.  Tested with PAD8A)
 
+## Adding the component to Home Assistant
+
+  - Add the `crestron` directory to `config/custom_components`
+  - Restart Home Assistant
+
 ## On the control system
  - Add a TCP/IP Client device to the control system
  - Configure the client device with the IP address of Home Assistant
@@ -43,6 +48,9 @@ light:
     brightness_join: 9
     type: brightness
 ```
+ - _name_: The entity id will be derived from this string (lower-cased with _ for spaces).  The friendly name will be set to this string.
+ - _brightness_join: The analog join on the XSIG symbol that represents the light's brightness.
+ - _type_: The only supported value for now is *brightness*.  TODO: add support for other HA light types.
 
 ### Thermostat
 
@@ -65,6 +73,9 @@ climate:
     fa_join: 10
 ```
 
+This configuration is based on THV-TSTAT/THSTATs, but should work with any thermostat that can be represented by similar analog/digital joins.
+- _name_: The entity id will be derived from this string (lower-cased with _ for spaces).  The friendly name will be set to this string.
+
 ### Shades
 
 ```yaml
@@ -78,6 +89,7 @@ cover:
     stop_join: 43
     is_closed_join: 44
 ```
+- _name_: The entity id will be derived from this string (lower-cased with _ for spaces).  The friendly name will be set to this string.
 
 ### Binary Sensor
 
@@ -88,6 +100,7 @@ binary_sensor:
     is_on_join: 57
     device_class: power
 ```
+- _name_: The entity id will be derived from this string (lower-cased with _ for spaces).  The friendly name will be set to this string.
 
 ### Sensor
 
@@ -100,6 +113,7 @@ sensor:
     unit_of_measurement: "F"
     divisor: 10
 ```
+- _name_: The entity id will be derived from this string (lower-cased with _ for spaces).  The friendly name will be set to this string.
 
 ### Switch
 
@@ -109,8 +123,23 @@ switch:
     name: "Dummy Switch"
     switch_join: 65
 ```
+- _name_: The entity id will be derived from this string (lower-cased with _ for spaces).  The friendly name will be set to this string.
 
-## Adding the component to Home Assistant
+### Media Player
 
-  - Add the `crestron` directory to `config/custom_components`
-  - Restart Home Assistant
+```yaml
+media_player:
+  - platform: crestron
+    name: "Kitchen Speakers"
+    mute_join: 27
+    volume_join: 19
+    source_number_join: 13
+    sources:
+      1: "Android TV"
+      2: "Roku"
+      3: "Apple TV"
+      4: "Chromecast"
+      7: "Volumio"
+      8: "Crestron Streamer"```
+
+- _name_: The entity id will be derived from this string (lower-cased with _ for spaces).  The friendly name will be set to this string.
