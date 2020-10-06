@@ -2,23 +2,37 @@
 Integration for Home Assistant for the Crestron XSIG symbol
 
 Currently supported devices:
-  - Lights (represented as an Analog brightness value on the control system)
-  - Thermostat (CHV-TSTAT/THSTAT for now)
-  - Shades (I tested with CSM-QMTDC shades)
+  - Lights (Any device that can be represented as an Analog join for brightness on the control system)
+  - Thermostat (Anything that looks like a CHV-TSTAT/THSTAT)
+  - Shades (Any shade that uses an analog join for position plus digital joins for is_opening/closing, is_open/closed.  I tested with CSM-QMTDC shades)
   - Binary Sensor (any digital signal on the control system - read only)
-  - Sensor (any analog signal on the control system)
+  - Sensor (any analog signal on the control system - read only)
   - Switch (any digital signal on the contol system - read / write)
+  - Media Player (Can represent a multi-zone switcher.  Tested with PAD8A)
 
 ## On the control system
  - Add a TCP/IP Client device to the control system
  - Configure the client device with the IP address of Home Assistant
- - Add the port number to the TCP/IP client symbol
+ - Set the port number on the TCP/IP client symbol to 16384 (TODO: make this configurable)
  - Add an "Intersystem Communication" symbol (quick key = xsig).
  - Attach your Analog and Digital signals to the inputs/outputs.
+   - Note you can use multiple XSIGs attached to the same TCP/IP Client serials.  I found its simplest to use one for digitals and one for analogs to keep the numbering simpler (see below).
+  
+Note: Be careful when mixing analogs and digtals on the same XSIG symbol.  Even though the symbol starts numbering the digitals at "1", the XSIG will actually send the join number for where the symbol appears sequentially in the entire list of signals.  For example, if you have 25 analog signals followed by 10 digital signals attached to the same XSIG, the digitals will be sent as 26-35, not 1-10 (even though they are labeled dig_xx1 - digxx10 on the symbol).  You can either account for this in your configuration on the HA side, or just use one symbol for Analogs and another for Digitals to keep the numbering easy.
  
 ## Home Assistant configuration.yaml
 
-Add the following to your configuration.yaml for the appropriate entity type in Home Assistant
+Add entries for each HA component/platform type to your configuration.yaml for the appropriate entity type in Home Assistant:
+
+|Crestron Device|Home Assistant component type|
+|---|---|
+|Light|light|
+|Thermostat|climate|
+|Shades|cover|
+|read-only Digital Join|binary_sensor|
+|read-only Analog Join|sensor|
+|read-write Digital Join|switch|
+|Audio/Video Switcher|media_player|
 
 ### Lights
 
