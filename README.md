@@ -170,7 +170,8 @@ media_player:
       3: "Apple TV"
       4: "Chromecast"
       7: "Volumio"
-      8: "Crestron Streamer"```
+      8: "Crestron Streamer"
+```
 
 You can use this to represent output channels of an AV switcher.  For example a PAD-8A is an 8x8 (8 inputs x 8 outputs) audio switcher.  This can be represented by 8 media player components (one for each output).  This component supported source selection (input selection) and volume+mute control.  So it is modeled as a "speaker" media player type in Home Assistant.
 - _name_: The entity id will be derived from this string (lower-cased with _ for spaces).  The friendly name will be set to this string.
