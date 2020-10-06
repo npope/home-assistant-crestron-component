@@ -23,7 +23,8 @@ Currently supported devices:
  - Attach your Analog and Digital signals to the inputs/outputs.
    - Note you can use multiple XSIGs attached to the same TCP/IP Client serials.  I found its simplest to use one for digitals and one for analogs to keep the numbering simpler (see below).
   
-> Caution: Be careful when mixing analogs and digtals on the same XSIG symbol.  Even though the symbol starts numbering the digitals at "1", the XSIG will actually send the join number for where the symbol appears sequentially in the entire list of signals.  For example, if you have 25 analog signals followed by 10 digital signals attached to the same XSIG, the digitals will be sent as 26-35, not 1-10 (even though they are labeled dig_xx1 - digxx10 on the symbol).  You can either account for this in your configuration on the HA side, or just use one symbol for Analogs and another for Digitals to keep the numbering easy.
+> Caution: Be careful when mixing analogs and digtals on the same XSIG symbol.  Even though the symbol starts numbering the digitals at "1", the XSIG will actually send the join number for where the symbol appears sequentially in the entire list of signals.
+> For example, if you have 25 analog signals followed by 10 digital signals attached to the same XSIG, the digitals will be sent as 26-35, not 1-10 (even though they are labeled dig_xx1 - digxx10 on the symbol).  You can either account for this in your configuration on the HA side, or just use one symbol for Analogs and another for Digitals to keep the numbering easy.
  
 ## Home Assistant configuration.yaml
 
@@ -49,7 +50,7 @@ light:
     type: brightness
 ```
  - _name_: The entity id will be derived from this string (lower-cased with _ for spaces).  The friendly name will be set to this string.
- - _brightness_join: The analog join on the XSIG symbol that represents the light's brightness.
+ - _brightness_join_: The analog join on the XSIG symbol that represents the light's brightness.
  - _type_: The only supported value for now is *brightness*.  TODO: add support for other HA light types.
 
 ### Thermostat
@@ -75,6 +76,19 @@ climate:
 
 This configuration is based on THV-TSTAT/THSTATs, but should work with any thermostat that can be represented by similar analog/digital joins.
 - _name_: The entity id will be derived from this string (lower-cased with _ for spaces).  The friendly name will be set to this string.
+- _heat_sp_join_: analog join that represents the heat setpoint
+- _cool_sp_join_: analog join that represents the cool setpoint
+- _reg_temp_join_: analog join that represents the room temperature read by the thermostat.  The CHV-TSTAT calls this the "regulation temperture" because it my be derived from averaging a bunch of room temperature sensors.  This is so called because it is the temperature used by the thermostat to decide when to make calls for heating or cooling.
+- _mode_heat_join_: digital feedback (read-only) join that is high when the thermostat is in heating mode
+- _mode_heat_join_: digital feedback (read-only) join that is high when the thermostat is in cooling mode
+- _mode_auto_join_: digital feedback (read-only) join that is high when the thermostat is in auto mode
+- _mode_off_join_: digital feedback (read-only) join that is high when the thermostat mode is set to off
+- _fan_on_join_: digital feedback (read-only) join that is high when the thermostat fan mode is set to (always) on
+- _fan_on_join_: digital feedback (read-only) join that is high when the thermostat fan mode is set to auto
+- _h1_join_: digital feedback (read-only) join that represents the state of the stage 1 heat relay
+- _h2_join_: digital feedback (read-only) join that represents the state of the stage 2 heat relay
+- _c1_join_: digital feedback (read-only) join that represents the state of the stage 1 cool relay
+- _fa_join_: digital feedback (read-only) join that represents the state of the stage fan relay
 
 ### Shades
 
@@ -90,6 +104,11 @@ cover:
     is_closed_join: 44
 ```
 - _name_: The entity id will be derived from this string (lower-cased with _ for spaces).  The friendly name will be set to this string.
+- _pos_join_: analog join that represents the shade position.  The value follow the typical definition for a Crestron analog shade (0 = closed, 65535 = open).
+- _is_opening_join_: digital feedback (read-only) join that is high when shade is in the process of opening
+- _is_closing_join_: digital feedback (read-only) join that is high when shade is in the process of closed
+- _is_closed_join_: digital feedback (read-only) join that is high when shade is fully closed
+- _stop_join_: digital join that can be pulsed high to stop the shade opening/closing
 
 ### Binary Sensor
 
@@ -100,7 +119,11 @@ binary_sensor:
     is_on_join: 57
     device_class: power
 ```
+
+Use this for any digital join in the control system that you would like to represent as a binary sensor (on/off) in Home Assistant.
 - _name_: The entity id will be derived from this string (lower-cased with _ for spaces).  The friendly name will be set to this string.
+- _is_on_join_: digital feedback (read-only) join to represent as a binary sensor in Home Assistant
+- _device_class_: any device class [supported by the binary_sensor](https://www.home-assistant.io/integrations/binary_sensor/) integration.  This mostly affects how the value will be expressed in various UIs.
 
 ### Sensor
 
@@ -113,7 +136,12 @@ sensor:
     unit_of_measurement: "F"
     divisor: 10
 ```
+Use this for any analog join in the control system that you would like to represent as a sensor in Home Assistant.
 - _name_: The entity id will be derived from this string (lower-cased with _ for spaces).  The friendly name will be set to this string.
+- _value_join_: analog join to represent as a sensor in Home Assistant
+- _device_class_: any device class [supported by the sensor](https://www.home-assistant.io/integrations/sensor/) integration.  This mostly affects how the value will be expressed in various UIs.
+- _unit_of_measurement_: Unit of measurement appropriate for the device class as documented [here](https://developers.home-assistant.io/docs/core/entity/sensor/).
+- _divisor_: (optional) number to divide the analog join by to get the correct sensor value.  For example, a crestron temperature sensor returns tenths of a degree (754 represents 75.4 degrees), so you would use a divisor of 10.  Defaults to 1.
 
 ### Switch
 
@@ -123,7 +151,9 @@ switch:
     name: "Dummy Switch"
     switch_join: 65
 ```
+Use this for any digital join in the control system that you would like to control via a toggle (on/off) switch in Home Assistant.
 - _name_: The entity id will be derived from this string (lower-cased with _ for spaces).  The friendly name will be set to this string.
+- _switch_join_: digital join to represent as a switch in Home Assistant
 
 ### Media Player
 
@@ -142,4 +172,9 @@ media_player:
       7: "Volumio"
       8: "Crestron Streamer"```
 
+You can use this to represent output channels of an AV switcher.  For example a PAD-8A is an 8x8 (8 inputs x 8 outputs) audio switcher.  This can be represented by 8 media player components (one for each output).  This component supported source selection (input selection) and volume+mute control.  So it is modeled as a "speaker" media player type in Home Assistant.
 - _name_: The entity id will be derived from this string (lower-cased with _ for spaces).  The friendly name will be set to this string.
+- _mute_join_: digital join that represents the mute state of the channel.  Note this is not a toggle. Both to and from the control system True = muted, False = not muted.  This might require some extra logic on the control system side if you only have logic that takes a toggle.
+- _volume_join_: analog join that represents the volume of the channel (0-65535)
+- _source_number_join_: analog join that represents the selected input for the output channel.  1 would correspond to input 1, 2 to input 2, and so on.
+- _sources_: a dictionary of _input_ to _name_ mappings.  The input number is the actual input (corresponding to the source_number_join) number, whereas the name will be shown in the UI when selecting inputs/sources.  So when a user selects the _name_ in the UI, the _source_number_join_ will be set to _input_.
