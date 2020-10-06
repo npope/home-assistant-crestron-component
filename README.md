@@ -23,7 +23,7 @@ Currently supported devices:
  - Attach your Analog and Digital signals to the inputs/outputs.
    - Note you can use multiple XSIGs attached to the same TCP/IP Client serials.  I found its simplest to use one for digitals and one for analogs to keep the numbering simpler (see below).
   
-Note: Be careful when mixing analogs and digtals on the same XSIG symbol.  Even though the symbol starts numbering the digitals at "1", the XSIG will actually send the join number for where the symbol appears sequentially in the entire list of signals.  For example, if you have 25 analog signals followed by 10 digital signals attached to the same XSIG, the digitals will be sent as 26-35, not 1-10 (even though they are labeled dig_xx1 - digxx10 on the symbol).  You can either account for this in your configuration on the HA side, or just use one symbol for Analogs and another for Digitals to keep the numbering easy.
+> Caution: Be careful when mixing analogs and digtals on the same XSIG symbol.  Even though the symbol starts numbering the digitals at "1", the XSIG will actually send the join number for where the symbol appears sequentially in the entire list of signals.  For example, if you have 25 analog signals followed by 10 digital signals attached to the same XSIG, the digitals will be sent as 26-35, not 1-10 (even though they are labeled dig_xx1 - digxx10 on the symbol).  You can either account for this in your configuration on the HA side, or just use one symbol for Analogs and another for Digitals to keep the numbering easy.
  
 ## Home Assistant configuration.yaml
 
