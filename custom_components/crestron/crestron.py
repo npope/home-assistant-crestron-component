@@ -136,9 +136,9 @@ class CrestronHub():
             return
         elif self._writer:
           data =  struct.pack('>BB', 0b11001000 | ( (join - 1) >> 7 ), (join - 1) & 0b01111111)
-          data += string
+          data += string.encode()
           data += b'\xff'
           self._writer.write(data)
-          _LOGGER.debug(f'Sending Serial: {join}, {value}')
+          _LOGGER.debug(f'Sending Serial: {join}, {string}')
         else:
           _LOGGER.info('Could not send.  No connection to hub')
