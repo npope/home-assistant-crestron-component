@@ -26,7 +26,7 @@ class CrestronHub():
         _LOGGER.info(f'Listening on {addr}:{port}')
         server.serve_forever()
 
-    async def stop(self, event):
+    async def stop(self):
         ''' Stop TCP XSIG server '''
         self._available = False
         for callback in self._callbacks:
