@@ -40,7 +40,7 @@ async def async_setup(hass, config):
                         data = dict(join['data'])
                         _LOGGER.debug(f"calling service {join['service']} with data = {data} from join {cbtype} = {value}")
                         domain, service = join['service'].split('.')
-                        await hass.services.async_call(domain, service, data);
+                        await hass.services.async_call(domain, service, data)
 
     @callback
     def state_change_callback(entity_id, old_state, new_state):
