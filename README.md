@@ -13,6 +13,7 @@ Currently supported devices:
 ## Adding the component to Home Assistant
 
   - Add the `crestron` directory to `config/custom_components`
+  - Add the appropriate sections to `configuration.yaml` (see below)
   - Restart Home Assistant
 
 ## On the control system
@@ -20,11 +21,12 @@ Currently supported devices:
  - Configure the client device with the IP address of Home Assistant
  - Set the port number on the TCP/IP client symbol to 16384 (TODO: make this configurable)
  - Add an "Intersystem Communication" symbol (quick key = xsig).
- - Attach your Analog and Digital signals to the inputs/outputs.
-   - Note you can use multiple XSIGs attached to the same TCP/IP Client serials.  I found its simplest to use one for digitals and one for analogs to keep the numbering simpler (see below).
+ - Attach your Analog, Serial and Digital signals to the input/output joins.
+   - Note you can use multiple XSIGs attached to the same TCP/IP Client serials.  I found its simplest to use one for digitals and one for analogs/serials to keep the numbering simpler (see below).
   
-> Caution: Be careful when mixing analogs and digtals on the same XSIG symbol.  Even though the symbol starts numbering the digitals at "1", the XSIG will actually send the join number for where the symbol appears sequentially in the entire list of signals.
+> Caution: Be careful when mixing analog/serials and digtals on the same XSIG symbol.  Even though the symbol starts numbering the digitals at "1", the XSIG will actually send the join number for where the symbol appears sequentially in the entire list of signals.
 > For example, if you have 25 analog signals followed by 10 digital signals attached to the same XSIG, the digitals will be sent as 26-35, not 1-10 (even though they are labeled dig_xx1 - digxx10 on the symbol).  You can either account for this in your configuration on the HA side, or just use one symbol for Analogs and another for Digitals to keep the numbering easy.
+> Since the XSIG lets you combine Analog/Serial joins on the same symbol, you can simply have one XSIG for Analog/Serial joins and another for digitals.  This keeps the join numbering simple.
  
 ## Home Assistant configuration.yaml
 
@@ -39,6 +41,8 @@ Add entries for each HA component/platform type to your configuration.yaml for t
 |read-only Analog Join|sensor|
 |read-write Digital Join|switch|
 |Audio/Video Switcher|media_player|
+
+If you want to make use of the control surface (touchpanels/kepads) syncing capability, you will need to add a `crestron` section as well, with either a `to_joins`, a `from_joins` section, or both (see below).
 
 ### Lights
 
@@ -179,3 +183,68 @@ You can use this to represent output channels of an AV switcher.  For example a 
 - _volume_join_: analog join that represents the volume of the channel (0-65535)
 - _source_number_join_: analog join that represents the selected input for the output channel.  1 would correspond to input 1, 2 to input 2, and so on.
 - _sources_: a dictionary of _input_ to _name_ mappings.  The input number is the actual input (corresponding to the source_number_join) number, whereas the name will be shown in the UI when selecting inputs/sources.  So when a user selects the _name_ in the UI, the _source_number_join_ will be set to _input_.
+
+### Control Surface Sync
+
+If you have Crestron touch panels or keypads, it can be useful to keep certain joins in sync with Home Assistant state and to be able to invoke Home Assistant functionality (via a script) when a join changes.  This functionality was added with v0.2.  There are two directions to sync: from HA to the control system and from the control system states to HA.
+
+Since this functionality is not necessarily associated with any HA entity, the configuration will live under the root `crestron:` key in `configuration.yaml`.  There are two sections:
+- `to_joins` for syncing HA state to control system joins
+- `from_joins` for syncing control system joins to HA
+
+```yaml
+crestron:
+  to_joins:
+  ...
+  from_joins:
+  ...
+```
+
+ #### From HA to the Control System
+
+The `to_joins` section will list all the joins you want to map HA state changes to.  For each join, you list either:
+ - a simple `entity_id` with optional `attribute` to map entity state directly to a join.
+ - a `value_template` that lets you map almost any combination of state values (including the full power of template logic) to the listed join.
+
+ ```yaml
+ crestron:
+  to_joins:
+    - join: d12
+      entity_id: switch.compressor
+    - join: a35
+      value_template: {{value|int * 10}}
+    - join: s4
+      value_template: "Current weather conditions: {{state('weather.home')}}"
+    - join: a2
+      entity_id: media_player.kitchen
+      attribute: volume_level
+    - join: s4
+      value_template: "http://hassio:8123{{ state_attr('media_player.volumio', 'entity_picture') }}"
+```  
+ 
+ - _to_joins_: begins the section
+ - _join_: for each join, list the join type and number.  The type prefix is 'a' for analog joins, 'd' for digital joins and 's' for serial joins.  So s32 would be serial join #32.  The value of this join will be set to either the state/attribute of the configured entity ID or the output of the configured template.
+ - _entity_id_: the entity ID to sync this join to.  If no _attribute_ is listed the join will be set to entity's state value whenever the state changes.
+ - _attribute_: use the listed attribute value for the join value instead of the entity's state.
+ - _value_template_: used instead of _entity_id_/_attribute_ if you need more flexibility on how to set the value (prefix/suffix or math operations) or even to set the join value based on multiple entity IDs/state values.  You have the full power of [HA templating](https://www.home-assistant.io/docs/automation/templating/) to work with here.
+
+ >Note that when you specify an `entity_id`, all changes to that entity_id will result in a join update being sent to the control system.  When you specify a `value_template` a change to any referenced entity will trigger a join update.
+
+ #### From Control System to HA
+ 
+ The `from_joins` section will list all the joins you want to track from the control system.  When each join changes the configured functionality will be invoked.
+
+ ```yaml
+ from_joins:
+    - join: a2
+      script:
+        service: input_text.set_value
+        data:
+          entity_id: input_text.test
+          value: "Master BR temperature is {{value|int / 10}}"
+```
+
+ - _from_joins_: begins the section
+ - _join_: for each join, list the join type and number.  The type prefix is 'a' for analog joins, 'd' for digital joins and 's' for serial joins.  So s32 would be serial join #32.  Any change in the listed join will invoke the configured behavior.
+ - _script_: This is a standard HA script.  It follows the standard [HA scripting sytax](https://www.home-assistant.io/docs/scripts/).
+

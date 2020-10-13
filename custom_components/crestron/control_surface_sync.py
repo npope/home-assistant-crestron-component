@@ -54,7 +54,7 @@ class ControlSurfaceSync:
                         data = dict(join['data'])
                         _LOGGER.debug(f"join_change_callback calling service {join['service']} with data = {data} from join {cbtype} = {value}")
                         domain, service = join['service'].split('.')
-                        await self.hass.services.async_call(domain, service, data);
+                        await self.hass.services.async_call(domain, service, data)
                     elif 'script' in join:
                         sequence = cv.SCRIPT_SCHEMA(join['script'])
                         script = Script(self.hass, sequence, "Crestron Join Change", DOMAIN)
