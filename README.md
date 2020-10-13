@@ -204,7 +204,7 @@ crestron:
 
 The `to_joins` section will list all the joins you want to map HA state changes to.  For each join, you list either:
  - a simple `entity_id` with optional `attribute` to map entity state directly to a join.
- - a `value_template` that lets you map almost any combination of state values (including the full power of template logic) to the listed join.
+ - a `value_template` that lets you map almost any combination of state values (including the full power of [template logic](https://www.home-assistant.io/docs/automation/templating/)) to the listed join.
 
  ```yaml
  crestron:
@@ -212,7 +212,7 @@ The `to_joins` section will list all the joins you want to map HA state changes 
     - join: d12
       entity_id: switch.compressor
     - join: a35
-      value_template: {{value|int * 10}}
+      value_template: "{{value|int * 10}}"
     - join: s4
       value_template: "Current weather conditions: {{state('weather.home')}}"
     - join: a2

@@ -8,6 +8,10 @@ from homeassistant.helpers.template import Template
 from homeassistant.helpers.script import Script
 from homeassistant.core import callback, Context
 from homeassistant.helpers import config_validation as cv
+from homeassistant.const import (
+    STATE_ON,
+    STATE_OFF
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -72,8 +76,12 @@ class ControlSurfaceSync:
                 for join, template in self.to_hub.items():
                     if template == update_template:
                         if join[:1] == "d":
-                            _LOGGER.debug(f"template_change_callback setting digital join {int(join[1:])} to {bool(update_result)}")
-                            #self.hub.set_digital(int(join[1:]), bool(update_result))
+                            if update_result == STATE_ON:
+                                value = True
+                            if update_result == STATE_OFF:
+                                value = False
+                            _LOGGER.debug(f"template_change_callback setting digital join {int(join[1:])} to {value}")
+                            #self.hub.set_digital(int(join[1:]), value)
                         if join[:1] == "a":
                             _LOGGER.debug(f"template_change_callback setting analog join {int(join[1:])} to {int(update_result)}")
                             #self.hub.set_analog(int(join[1:]), int(update_result))

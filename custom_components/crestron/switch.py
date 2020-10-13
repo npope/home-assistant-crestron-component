@@ -1,6 +1,10 @@
 """Platform for Crestron Switch integration."""
 
-from homeassistant.components.switch import SwitchEntity 
+from homeassistant.components.switch import SwitchEntity
+from homeassistant.const import (
+    STATE_ON,
+    STATE_OFF
+)
 import logging
 
 DOMAIN='crestron'
@@ -50,7 +54,10 @@ class CrestronSwitch(SwitchEntity):
 
     @property
     def state(self):
-         return self._hub.get_digital(self._switch_join)
+         if self._hub.get_digital(self._switch_join):
+             return STATE_ON
+         else:
+             return STATE_OFF
 
     @property
     def is_on(self):

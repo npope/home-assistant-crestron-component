@@ -1,6 +1,10 @@
 """Platform for Crestron Binary Sensor integration."""
 
 from homeassistant.helpers.entity import Entity
+from homeassistant.const import (
+    STATE_ON,
+    STATE_OFF
+)
 import logging
 
 DOMAIN='crestron'
@@ -42,5 +46,12 @@ class CrestronBinarySensor(Entity):
         return self._device_class
 
     @property
-    def state(self):
+    def is_on(self):
         return self._hub.get_digital(self._join)
+
+    @property
+    def state(self):
+        if self._hub.get_digital(self._join):
+            return STATE_ON
+        else:
+            return STATE_OFF
