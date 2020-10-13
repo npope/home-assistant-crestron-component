@@ -75,13 +75,16 @@ class ControlSurfaceSync:
             if update_result != "None":
                 for join, template in self.to_hub.items():
                     if template == update_template:
+                        _LOGGER.debug(f"processing template_change_callback for join {join} with result {update_result}")
                         if join[:1] == "d":
-                            if update_result == STATE_ON:
+                            value = None
+                            if update_result == STATE_ON or update_result == "True":
                                 value = True
-                            if update_result == STATE_OFF:
+                            elif update_result == STATE_OFF or update_result == "False":
                                 value = False
-                            _LOGGER.debug(f"template_change_callback setting digital join {int(join[1:])} to {value}")
-                            #self.hub.set_digital(int(join[1:]), value)
+                            if value is not None:
+                                _LOGGER.debug(f"template_change_callback setting digital join {int(join[1:])} to {value}")
+                                #self.hub.set_digital(int(join[1:]), value)
                         if join[:1] == "a":
                             _LOGGER.debug(f"template_change_callback setting analog join {int(join[1:])} to {int(update_result)}")
                             #self.hub.set_analog(int(join[1:]), int(update_result))
