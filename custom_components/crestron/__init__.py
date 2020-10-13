@@ -19,9 +19,9 @@ PLATFORMS = ["binary_sensor", "sensor", "switch", "light", "climate", "cover", "
 async def async_setup(hass, config):
     """Set up a the crestron component."""
     hass.data[DOMAIN] = {}
-
     hub = crestron.CrestronHub()
     hass.data[DOMAIN]['hub'] = hub
+
     if DOMAIN in config:
         syncer = ControlSurfaceSync(hass, config)
     else:
