@@ -76,6 +76,7 @@ class ControlSurfaceSync:
                 for join, template in self.to_hub.items():
                     if template == update_template:
                         _LOGGER.debug(f"processing template_change_callback for join {join} with result {update_result}")
+                        # Digital Join
                         if join[:1] == "d":
                             value = None
                             if update_result == STATE_ON or update_result == "True":
@@ -84,13 +85,15 @@ class ControlSurfaceSync:
                                 value = False
                             if value is not None:
                                 _LOGGER.debug(f"template_change_callback setting digital join {int(join[1:])} to {value}")
-                                #self.hub.set_digital(int(join[1:]), value)
+                                self.hub.set_digital(int(join[1:]), value)
+                        # Analog Join
                         if join[:1] == "a":
                             _LOGGER.debug(f"template_change_callback setting analog join {int(join[1:])} to {int(update_result)}")
-                            #self.hub.set_analog(int(join[1:]), int(update_result))
+                            self.hub.set_analog(int(join[1:]), int(update_result))
+                        # Serial Join
                         if join[:1] == "s":
                             _LOGGER.debug(f"template_change_callback setting serial join {int(join[1:])} to {str(update_result)}")
-                            #self.hub.set_serial(int(join[1:]), str(update_result))
+                            self.hub.set_serial(int(join[1:]), str(update_result))
 
     def stop(self):
         ''' remove callback(s) and template trackers '''

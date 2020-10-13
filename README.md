@@ -204,7 +204,7 @@ crestron:
 
 The `to_joins` section will list all the joins you want to map HA state changes to.  For each join, you list either:
  - a simple `entity_id` with optional `attribute` to map entity state directly to a join.
- - a `value_template` that lets you map almost any combination of state values (including the full power of [template logic](https://www.home-assistant.io/docs/automation/templating/)) to the listed join.
+ - a `value_template` that lets you map almost any combination of state values (including the full power of [template logic](https://www.home-assistant.io/docs/configuration/templating/)) to the listed join.
 
  ```yaml
  crestron:
@@ -226,7 +226,7 @@ The `to_joins` section will list all the joins you want to map HA state changes 
  - _join_: for each join, list the join type and number.  The type prefix is 'a' for analog joins, 'd' for digital joins and 's' for serial joins.  So s32 would be serial join #32.  The value of this join will be set to either the state/attribute of the configured entity ID or the output of the configured template.
  - _entity_id_: the entity ID to sync this join to.  If no _attribute_ is listed the join will be set to entity's state value whenever the state changes.
  - _attribute_: use the listed attribute value for the join value instead of the entity's state.
- - _value_template_: used instead of _entity_id_/_attribute_ if you need more flexibility on how to set the value (prefix/suffix or math operations) or even to set the join value based on multiple entity IDs/state values.  You have the full power of [HA templating](https://www.home-assistant.io/docs/automation/templating/) to work with here.
+ - _value_template_: used instead of _entity_id_/_attribute_ if you need more flexibility on how to set the value (prefix/suffix or math operations) or even to set the join value based on multiple entity IDs/state values.  You have the full power of [HA templating](https://www.home-assistant.io/docs/configuration/templating/) to work with here.
 
  >Note that when you specify an `entity_id`, all changes to that entity_id will result in a join update being sent to the control system.  When you specify a `value_template` a change to any referenced entity will trigger a join update.
 
