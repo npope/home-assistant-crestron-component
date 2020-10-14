@@ -26,6 +26,7 @@ class ControlSurfaceSync:
         self.hub = hass.data[DOMAIN]['hub']
         self.context = Context()
         self.to_hub = {}
+        self.hub.register_sync_all_joins_callback(self.sync_joins_to_hub)
         if CONF_TO_HUB in config[DOMAIN]:
             track_templates = []
             for entity in config[DOMAIN][CONF_TO_HUB]:
@@ -37,7 +38,6 @@ class ControlSurfaceSync:
                 elif 'entity_id' in entity:
                     template_string = "{{states('" + entity['entity_id'] + "')}}"
                 if template_string:
-                    _LOGGER.debug(f"adding template tracker = {template_string}")
                     template = Template(template_string, hass)
                     self.to_hub[entity['join']] = template
                     track_templates.append(TrackTemplate(template, None))
@@ -94,6 +94,29 @@ class ControlSurfaceSync:
                         if join[:1] == "s":
                             _LOGGER.debug(f"template_change_callback setting serial join {int(join[1:])} to {str(update_result)}")
                             self.hub.set_serial(int(join[1:]), str(update_result))
+
+    async def sync_joins_to_hub(self):
+        _LOGGER.debug("Syncing joins to control system")
+        for join, template in self.to_hub.items():
+            result = await template.async_render()
+            # Digital Join
+            if join[:1] == "d":
+                value = None
+                if result == STATE_ON or result == "True":
+                    value = True
+                elif result == STATE_OFF or result == "False":
+                    value = False
+                if value is not None:
+                    _LOGGER.debug(f"template_change_callback setting digital join {int(join[1:])} to {value}")
+                    self.hub.set_digital(int(join[1:]), value)
+            # Analog Join
+            if join[:1] == "a":
+                _LOGGER.debug(f"template_change_callback setting analog join {int(join[1:])} to {int(result)}")
+                self.hub.set_analog(int(join[1:]), int(result))
+            # Serial Join
+            if join[:1] == "s":
+                _LOGGER.debug(f"template_change_callback setting serial join {int(join[1:])} to {str(result)}")
+                self.hub.set_serial(int(join[1:]), str(result))
 
     def stop(self):
         ''' remove callback(s) and template trackers '''

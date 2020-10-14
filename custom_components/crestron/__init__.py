@@ -19,7 +19,7 @@ PLATFORMS = ["binary_sensor", "sensor", "switch", "light", "climate", "cover", "
 async def async_setup(hass, config):
     """Set up a the crestron component."""
     hass.data[DOMAIN] = {}
-    hub = crestron.CrestronHub()
+    hub = CrestronHub()
     hass.data[DOMAIN]['hub'] = hub
 
     if DOMAIN in config:
@@ -32,7 +32,7 @@ async def async_setup(hass, config):
         if syncer:
             syncer.stop()
 
-    await hub.start(const.PORT)
+    await hub.start(PORT)
     hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, stop)
 
     for platform in PLATFORMS:
