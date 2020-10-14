@@ -8,7 +8,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class CrestronHub():
 
-    def __init__(self):
+    def __init__(self, sync_all_joins_callback=None):
         ''' Initialize CrestronHub object '''
         self._digital = {}
         self._analog = {}
@@ -17,6 +17,7 @@ class CrestronHub():
         self._callbacks = set()
         self._server = None
         self._available = False
+        self._sync_all_joins_callback = sync_all_joins_callback
 
     async def start(self, port):
         ''' Start TCP XSIG server listening on configured port '''
@@ -56,8 +57,15 @@ class CrestronHub():
 
         connected = True
         while connected:
-            data = await reader.read(2)
+            data = await reader.read(1)
             if data:
+                # Sync all joins request
+                if data[0] == b'\xfb':
+                    if self._sync_all_joins_callback is not None:
+                        self._sync_all_joins_callback()
+                else:
+                    data += await reader.read(1)
+                # Digital Join
                 if data[0] & 0b11000000 == 0b10000000 and data[1] & 0b10000000 == 0b00000000:
                     header = struct.unpack('BB',data)
                     join = ((header[0] & 0b00011111) << 7 | header[1]) + 1 
@@ -66,6 +74,7 @@ class CrestronHub():
                     _LOGGER.debug(f'Got Digital: {join} = {value}')
                     for callback in self._callbacks:
                         await callback(f"d{join}", str(value))
+                # Analog Join
                 elif data[0] & 0b11001000 == 0b11000000 and data[1] & 0b10000000 == 0b00000000:
                     data += await reader.read(2)
                     header = struct.unpack('BBBB', data)
@@ -75,6 +84,7 @@ class CrestronHub():
                     _LOGGER.debug(f'Got Analog: {join} = {value}')
                     for callback in self._callbacks:
                         await callback(f"a{join}", str(value))
+                # Serial Join
                 elif data[0] & 0b11111000 == 0b11001000 and data[1] & 0b10000000 == 0b00000000:
                     data += await reader.readuntil(b'\xff')
                     header = struct.unpack( 'BB', data[:2] )
