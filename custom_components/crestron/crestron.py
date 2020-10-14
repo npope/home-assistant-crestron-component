@@ -65,41 +65,42 @@ class CrestronHub():
             if data:
                 # Sync all joins request
                 if data[0] == b'\xfb':
+                    _LOGGER.debug("Got update all joins request")
                     if self._sync_all_joins_callback is not None:
                         self._sync_all_joins_callback()
                 else:
                     data += await reader.read(1)
-                # Digital Join
-                if data[0] & 0b11000000 == 0b10000000 and data[1] & 0b10000000 == 0b00000000:
-                    header = struct.unpack('BB',data)
-                    join = ((header[0] & 0b00011111) << 7 | header[1]) + 1 
-                    value = ~header[0] >> 5 & 0b1
-                    self._digital[join] = True if value==1 else False
-                    _LOGGER.debug(f'Got Digital: {join} = {value}')
-                    for callback in self._callbacks:
-                        await callback(f"d{join}", str(value))
-                # Analog Join
-                elif data[0] & 0b11001000 == 0b11000000 and data[1] & 0b10000000 == 0b00000000:
-                    data += await reader.read(2)
-                    header = struct.unpack('BBBB', data)
-                    join = ((header[0] & 0b00000111) << 7 | header[1]) + 1
-                    value = (header[0] & 0b00110000) << 10 | header[2] << 7 | header[3]
-                    self._analog[join] = value
-                    _LOGGER.debug(f'Got Analog: {join} = {value}')
-                    for callback in self._callbacks:
-                        await callback(f"a{join}", str(value))
-                # Serial Join
-                elif data[0] & 0b11111000 == 0b11001000 and data[1] & 0b10000000 == 0b00000000:
-                    data += await reader.readuntil(b'\xff')
-                    header = struct.unpack( 'BB', data[:2] )
-                    join = (( header[0] & 0b00000111) << 7 | header[1]) + 1
-                    string = data[2:-1].decode("utf-8")
-                    self._serial[join] = string
-                    _LOGGER.debug(f'Got String: {join} = {string}')
-                    for callback in self._callbacks:
-                        await callback(f"s{join}", string)
-                else:
-                    _LOGGER.debug(f'Unknown Packet: {data.hex()}')
+                    # Digital Join
+                    if data[0] & 0b11000000 == 0b10000000 and data[1] & 0b10000000 == 0b00000000:
+                        header = struct.unpack('BB',data)
+                        join = ((header[0] & 0b00011111) << 7 | header[1]) + 1 
+                        value = ~header[0] >> 5 & 0b1
+                        self._digital[join] = True if value==1 else False
+                        _LOGGER.debug(f'Got Digital: {join} = {value}')
+                        for callback in self._callbacks:
+                            await callback(f"d{join}", str(value))
+                    # Analog Join
+                    elif data[0] & 0b11001000 == 0b11000000 and data[1] & 0b10000000 == 0b00000000:
+                        data += await reader.read(2)
+                        header = struct.unpack('BBBB', data)
+                        join = ((header[0] & 0b00000111) << 7 | header[1]) + 1
+                        value = (header[0] & 0b00110000) << 10 | header[2] << 7 | header[3]
+                        self._analog[join] = value
+                        _LOGGER.debug(f'Got Analog: {join} = {value}')
+                        for callback in self._callbacks:
+                            await callback(f"a{join}", str(value))
+                    # Serial Join
+                    elif data[0] & 0b11111000 == 0b11001000 and data[1] & 0b10000000 == 0b00000000:
+                        data += await reader.readuntil(b'\xff')
+                        header = struct.unpack( 'BB', data[:2] )
+                        join = (( header[0] & 0b00000111) << 7 | header[1]) + 1
+                        string = data[2:-1].decode("utf-8")
+                        self._serial[join] = string
+                        _LOGGER.debug(f'Got String: {join} = {string}')
+                        for callback in self._callbacks:
+                            await callback(f"s{join}", string)
+                    else:
+                        _LOGGER.debug(f'Unknown Packet: {data.hex()}')
             else:
                 _LOGGER.info('Control system disconnected')
                 connected = False
