@@ -64,7 +64,7 @@ class CrestronHub():
             data = await reader.read(1)
             if data:
                 # Sync all joins request
-                if data[0] == b'\xfb':
+                if data[0] == 0xfb:
                     _LOGGER.debug("Got update all joins request")
                     if self._sync_all_joins_callback is not None:
                         self._sync_all_joins_callback()
