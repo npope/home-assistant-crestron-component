@@ -98,7 +98,7 @@ class ControlSurfaceSync:
     async def sync_joins_to_hub(self):
         _LOGGER.debug("Syncing joins to control system")
         for join, template in self.to_hub.items():
-            result = await template.async_render()
+            result = template.async_render()
             # Digital Join
             if join[:1] == "d":
                 value = None

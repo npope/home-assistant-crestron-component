@@ -37,6 +37,7 @@ class CrestronHub():
 
     def register_sync_all_joins_callback(self, callback):
         ''' Allow callback to be registred for when control system requests an update to all joins '''
+        _LOGGER.debug("Sync-all-joins callback registered")
         self._sync_all_joins_callback = callback
 
     def register_callback(self, callback):
@@ -67,7 +68,8 @@ class CrestronHub():
                 if data[0] == 0xfb:
                     _LOGGER.debug("Got update all joins request")
                     if self._sync_all_joins_callback is not None:
-                        self._sync_all_joins_callback()
+                        await self._sync_all_joins_callback()
+                        _LOGGER.debug("Calling sync-all-joins callback")
                 else:
                     data += await reader.read(1)
                     # Digital Join
