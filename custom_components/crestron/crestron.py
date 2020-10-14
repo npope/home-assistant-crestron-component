@@ -8,7 +8,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class CrestronHub():
 
-    def __init__(self, sync_all_joins_callback=None):
+    def __init__(self):
         ''' Initialize CrestronHub object '''
         self._digital = {}
         self._analog = {}
@@ -17,7 +17,7 @@ class CrestronHub():
         self._callbacks = set()
         self._server = None
         self._available = False
-        self._sync_all_joins_callback = sync_all_joins_callback
+        self._sync_all_joins_callback = None
 
     async def start(self, port):
         ''' Start TCP XSIG server listening on configured port '''
@@ -34,6 +34,10 @@ class CrestronHub():
             await callback("available", "False")
         _LOGGER.info('Stop called. Closing connection')
         self._server.close()
+
+    def register_sync_all_joins_callback(self, callback):
+        ''' Allow callback to be registred for when control system requests an update to all joins '''
+        self._sync_all_joins_callback = callback
 
     def register_callback(self, callback):
         ''' Allow callbacks to be registered for when dict entries change '''
