@@ -5,18 +5,28 @@ from homeassistant.components.media_player import (MediaPlayerEntity ,
     SUPPORT_TURN_OFF,
     SUPPORT_TURN_ON,
     SUPPORT_VOLUME_MUTE,
-    SUPPORT_VOLUME_SET)
-
-from homeassistant.const import STATE_ON, STATE_OFF
+    SUPPORT_VOLUME_SET
+)
+from homeassistant.const import (
+    STATE_ON,
+    STATE_OFF,
+    CONF_NAME
+)
+from .const import (
+    HUB,
+    DOMAIN,
+    CONF_MUTE_JOIN,
+    CONF_VOLUME_JOIN,
+    CONF_SOURCE_NUM_JOIN,
+    CONF_SOURCES
+)
 
 import logging
-
-DOMAIN='crestron'
 
 _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
-    hub = hass.data[DOMAIN]['hub']
+    hub = hass.data[DOMAIN][HUB]
     entity = [CrestronRoom(hub, config)]
     async_add_entities(entity)
 
@@ -24,13 +34,13 @@ class CrestronRoom(MediaPlayerEntity):
 
     def __init__(self, hub, config):
         self._hub = hub
-        self._name = config['name']
+        self._name = config[CONF_NAME]
         self._device_class = "speaker"
         self._supported_features = SUPPORT_SELECT_SOURCE | SUPPORT_VOLUME_MUTE | SUPPORT_VOLUME_SET | SUPPORT_TURN_OFF
-        self._mute_join = config['mute_join']
-        self._volume_join = config['volume_join']
-        self._source_number_join = config['source_number_join']
-        self._sources = dict(config['sources'])
+        self._mute_join = config[CONF_MUTE_JOIN]
+        self._volume_join = config[CONF_VOLUME_JOIN]
+        self._source_number_join = config[CONF_SOURCE_NUM_JOIN]
+        self._sources = dict(config[CONF_SOURCES])
 
     async def async_added_to_hass(self):
         self._hub.register_callback(self.process_callback)

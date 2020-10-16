@@ -11,16 +11,26 @@ from homeassistant.components.cover import (CoverEntity,
         STATE_OPEN,
         STATE_CLOSING,
         STATE_CLOSED)
+from homeassistant.const import (
+    CONF_NAME
+)
+from .const import (
+    HUB,
+    DOMAIN,
+    CONF_IS_OPENING_JOIN,
+    CONF_IS_CLOSING_JOIN,
+    CONF_IS_CLOSED_JOIN,
+    CONF_STOP_JON,
+    CONF_POS_JOIN
+)
     
 import asyncio
 import logging
 
-DOMAIN='crestron'
-
 _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
-    hub = hass.data[DOMAIN]['hub']
+    hub = hass.data[DOMAIN][HUB]
     entity = [CrestronShade(hub, config)]
     async_add_entities(entity)
 
@@ -32,12 +42,12 @@ class CrestronShade(CoverEntity):
         self._supported_features = SUPPORT_OPEN | SUPPORT_CLOSE | SUPPORT_SET_POSITION | SUPPORT_STOP
         self._should_poll = False
 
-        self._name = config['name']
-        self._is_opening_join = config['is_opening_join']
-        self._is_closing_join = config['is_closing_join']
-        self._is_closed_join = config['is_closed_join']
-        self._stop_join = config['stop_join']
-        self._pos_join = config['pos_join']
+        self._name = config[CONF_NAME]
+        self._is_opening_join = config[CONF_IS_OPENING_JOIN]
+        self._is_closing_join = config[CONF_IS_CLOSING_JOIN]
+        self._is_closed_join = config[CONF_IS_CLOSED_JOIN]
+        self._stop_join = config[CONF_STOP_JON]
+        self._pos_join = config[CONF_POS_JOIN]
 
     async def async_added_to_hass(self):
         self._hub.register_callback(self.process_callback)

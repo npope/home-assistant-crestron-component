@@ -1,14 +1,22 @@
 """Platform for Crestron Light integration."""
 
 from homeassistant.components.light import LightEntity, SUPPORT_BRIGHTNESS
-import logging
+from homeassistant.const import (
+    CONF_NAME,
+    CONF_TYPE
+)
+from .const import (
+    HUB,
+    DOMAIN,
+    CONF_BRIGHTNESS_JOIN
+)
 
-DOMAIN='crestron'
+import logging
 
 _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
-    hub = hass.data[DOMAIN]['hub']
+    hub = hass.data[DOMAIN][HUB]
     entity = [CrestronLight(hub, config)]
     async_add_entities(entity)
 
@@ -16,9 +24,9 @@ class CrestronLight(LightEntity):
 
     def __init__(self, hub, config):
         self._hub = hub
-        self._name = config['name']
-        self._brightness_join = config['brightness_join']
-        if config['type'] == "brightness":
+        self._name = config[CONF_NAME]
+        self._brightness_join = config[CONF_BRIGHTNESS_JOIN]
+        if config[CONF_TYPE] == "brightness":
             self._supported_features = SUPPORT_BRIGHTNESS
 
     async def async_added_to_hass(self):

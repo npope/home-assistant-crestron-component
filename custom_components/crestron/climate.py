@@ -13,15 +13,36 @@ from homeassistant.components.climate.const import (SUPPORT_FAN_MODE,
     CURRENT_HVAC_IDLE,
     FAN_ON,
     FAN_AUTO)
+
+from homeassistant.const import (
+    CONF_NAME
+)
+
+from .const import (
+    HUB,
+    DOMAIN,
+    CONF_HEAT_SP_JOIN,
+    CONF_COOL_SP_JOIN,
+    CONF_REG_TEMP_JOIN,
+    CONF_MODE_HEAT_JOIN,
+    CONF_MODE_COOL_JOIN,
+    CONF_MODE_AUTO_JOIN,
+    CONF_MODE_OFF_JOIN,
+    CONF_FAN_ON_JOIN,
+    CONF_FAN_AUTO_JOIN,
+    CONF_H1_JOIN,
+    CONF_H2_JOIN,
+    CONF_C1_JOIN,
+    CONF_C2_JOIN,
+    CONF_FA_JOIN,
+)
     
 import logging
-
-DOMAIN='crestron'
 
 _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
-    hub = hass.data[DOMAIN]['hub']
+    hub = hass.data[DOMAIN][HUB]
     entity = [CrestronThermostat(hub, config, hass.config.units.temperature_unit)]
     async_add_entities(entity)
 
@@ -35,20 +56,21 @@ class CrestronThermostat(ClimateEntity):
         self._should_poll = False
         self._temperature_unit = unit
 
-        self._name = config['name']
-        self._heat_sp_join = config['heat_sp_join']
-        self._cool_sp_join = config['cool_sp_join']
-        self._reg_temp_join = config['reg_temp_join']
-        self._mode_heat_join = config['mode_heat_join']
-        self._mode_cool_join = config['mode_cool_join']
-        self._mode_auto_join = config['mode_auto_join']
-        self._mode_off_join = config['mode_off_join']
-        self._fan_on_join = config['fan_on_join']
-        self._fan_auto_join = config['fan_auto_join']
-        self._h1_join = config['h1_join']
-        self._h2_join = config['h2_join']
-        self._c1_join = config['c1_join']
-        self._fa_join = config['fa_join']
+        self._name = config[CONF_NAME]
+        self._heat_sp_join = config[CONF_HEAT_SP_JOIN]
+        self._cool_sp_join = config[CONF_COOL_SP_JOIN,]
+        self._reg_temp_join = config[CONF_REG_TEMP_JOIN]
+        self._mode_heat_join = config[CONF_MODE_HEAT_JOIN]
+        self._mode_cool_join = config[CONF_MODE_COOL_JOIN]
+        self._mode_auto_join = config[CONF_MODE_AUTO_JOIN]
+        self._mode_off_join = config[CONF_MODE_OFF_JOIN]
+        self._fan_on_join = config[CONF_FAN_ON_JOIN]
+        self._fan_auto_join = config[CONF_FAN_AUTO_JOIN]
+        self._h1_join = config[CONF_H1_JOIN]
+        self._h2_join = config[CONF_H2_JOIN]
+        self._c1_join = config[CONF_C1_JOIN]
+        self._c1_join = config[CONF_C2_JOIN]
+        self._fa_join = config[CONF_FA_JOIN]
 
 
     async def async_added_to_hass(self):
@@ -120,11 +142,9 @@ class CrestronThermostat(ClimateEntity):
 
     @property
     def hvac_action(self):
-        if self._hub.get_digital(self._h1_join):
+        if self._hub.get_digital(self._h1_join) or self._hub.get_digital(self._h2_join):
             return CURRENT_HVAC_HEAT
-        elif self._hub.get_digital(self._h2_join):
-            return CURRENT_HVAC_HEAT
-        elif self._hub.get_digital(self._c1_join):
+        elif self._hub.get_digital(self._c1_join) or self._hub.get_digital(self._c2_join):
             return CURRENT_HVAC_COOL
         else:
             return CURRENT_HVAC_IDLE

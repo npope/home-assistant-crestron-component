@@ -10,20 +10,29 @@ from homeassistant.core import callback, Context
 from homeassistant.helpers import config_validation as cv
 from homeassistant.const import (
     STATE_ON,
-    STATE_OFF
+    STATE_OFF,
+    CONF_VALUE_TEMPLATE,
+    CONF_ATTRIBUTE,
+    CONF_ENTITY_ID,
+    CONF_SERVICE,
+    CONF_SERVICE_DATA
+)
+from .const import (
+    HUB,
+    DOMAIN,
+    CONF_TO_HUB,
+    CONF_FROM_HUB,
+    CONF_JOIN,
+    CONF_SCRIPT
 )
 
 _LOGGER = logging.getLogger(__name__)
-
-DOMAIN='crestron'
-CONF_TO_HUB='to_joins'
-CONF_FROM_HUB='from_joins'
 
 class ControlSurfaceSync:
 
     def __init__(self, hass, config):
         self.hass = hass
-        self.hub = hass.data[DOMAIN]['hub']
+        self.hub = hass.data[DOMAIN][HUB]
         self.context = Context()
         self.to_hub = {}
         self.hub.register_sync_all_joins_callback(self.sync_joins_to_hub)
@@ -31,15 +40,15 @@ class ControlSurfaceSync:
             track_templates = []
             for entity in config[DOMAIN][CONF_TO_HUB]:
                 template_string = None
-                if 'value_template' in entity:
-                    template_string = entity['value_template']
-                elif 'attribute' in entity and 'entity_id' in entity:
-                    template_string = "{{state_attr('" + entity['entity_id'] + "','" + entity['attribute'] + "')}}"
-                elif 'entity_id' in entity:
-                    template_string = "{{states('" + entity['entity_id'] + "')}}"
+                if CONF_VALUE_TEMPLATE in entity:
+                    template_string = entity[CONF_VALUE_TEMPLATE]
+                elif CONF_ATTRIBUTE in entity and CONF_ENTITY_ID in entity:
+                    template_string = "{{state_attr('" + entity[CONF_ENTITY_ID] + "','" + entity[CONF_ATTRIBUTE] + "')}}"
+                elif CONF_ENTITY_ID in entity:
+                    template_string = "{{states('" + entity[CONF_ENTITY_ID] + "')}}"
                 if template_string:
                     template = Template(template_string, hass)
-                    self.to_hub[entity['join']] = template
+                    self.to_hub[entity[CONF_JOIN]] = template
                     track_templates.append(TrackTemplate(template, None))
             self.tracker = async_track_template_result(self.hass, track_templates, self.template_change_callback)
         if CONF_FROM_HUB in config[DOMAIN]:
@@ -49,21 +58,21 @@ class ControlSurfaceSync:
     async def join_change_callback(self, cbtype, value):
         ''' Call service for tracked join change (from_hub)'''
         for join in self.from_hub:
-            if cbtype == join['join']:
+            if cbtype == join[CONF_JOIN]:
                 # For digital joins, ignore on>off transitions  (avoids double calls to service for momentary presses)
                 if cbtype[:1] == "d" and value == "0":
                     pass
                 else:
-                    if 'service' in join and 'data' in join:
-                        data = dict(join['data'])
-                        _LOGGER.debug(f"join_change_callback calling service {join['service']} with data = {data} from join {cbtype} = {value}")
-                        domain, service = join['service'].split('.')
+                    if CONF_SERVICE in join and CONF_SERVICE_DATA in join:
+                        data = dict(join[CONF_SERVICE_DATA])
+                        _LOGGER.debug(f"join_change_callback calling service {join[CONF_SERVICE]} with data = {data} from join {cbtype} = {value}")
+                        domain, service = join[CONF_SERVICE].split('.')
                         await self.hass.services.async_call(domain, service, data)
-                    elif 'script' in join:
-                        sequence = cv.SCRIPT_SCHEMA(join['script'])
+                    elif CONF_SCRIPT in join:
+                        sequence = cv.SCRIPT_SCHEMA(join[CONF_SCRIPT])
                         script = Script(self.hass, sequence, "Crestron Join Change", DOMAIN)
                         await script.async_run({"value": value}, self.context)
-                        _LOGGER.debug(f"join_change_callback calling script {join['script']} from join {cbtype} = {value}")
+                        _LOGGER.debug(f"join_change_callback calling script {join[CONF_SCRIPT]} from join {cbtype} = {value}")
 
     @callback
     def template_change_callback(self, event, updates):
