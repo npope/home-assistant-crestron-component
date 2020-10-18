@@ -1,21 +1,13 @@
 """Platform for Crestron Sensor integration."""
 
 from homeassistant.helpers.entity import Entity
-from homeassistant.const import(
-    CONF_NAME,
-    CONF_DEVICE_CLASS,
-    CONF_UNIT_OF_MEASUREMENT
-)
-from .const import (
-    HUB,
-    DOMAIN,
-    CONF_VALUE_JOIN,
-    CONF_DIVISOR
-)
+from homeassistant.const import CONF_NAME, CONF_DEVICE_CLASS, CONF_UNIT_OF_MEASUREMENT
+from .const import HUB, DOMAIN, CONF_VALUE_JOIN, CONF_DIVISOR
 
 import logging
 
 _LOGGER = logging.getLogger(__name__)
+
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     hub = hass.data[DOMAIN][HUB]
@@ -24,7 +16,6 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 
 
 class CrestronSensor(Entity):
-
     def __init__(self, hub, config):
         self._hub = hub
         self._name = config[CONF_NAME]
@@ -59,7 +50,7 @@ class CrestronSensor(Entity):
 
     @property
     def state(self):
-        return self._hub.get_analog(self._join)/self._divisor
+        return self._hub.get_analog(self._join) / self._divisor
 
     @property
     def device_class(self):

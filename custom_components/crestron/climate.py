@@ -1,7 +1,8 @@
 """Platform for Crestron Thermostat integration."""
 
 from homeassistant.components.climate import ClimateEntity
-from homeassistant.components.climate.const import (SUPPORT_FAN_MODE,
+from homeassistant.components.climate.const import (
+    SUPPORT_FAN_MODE,
     SUPPORT_TARGET_TEMPERATURE_RANGE,
     HVAC_MODE_OFF,
     HVAC_MODE_HEAT,
@@ -12,11 +13,10 @@ from homeassistant.components.climate.const import (SUPPORT_FAN_MODE,
     CURRENT_HVAC_COOL,
     CURRENT_HVAC_IDLE,
     FAN_ON,
-    FAN_AUTO)
-
-from homeassistant.const import (
-    CONF_NAME
+    FAN_AUTO,
 )
+
+from homeassistant.const import CONF_NAME
 
 from .const import (
     HUB,
@@ -36,21 +36,27 @@ from .const import (
     CONF_C2_JOIN,
     CONF_FA_JOIN,
 )
-    
+
 import logging
 
 _LOGGER = logging.getLogger(__name__)
+
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     hub = hass.data[DOMAIN][HUB]
     entity = [CrestronThermostat(hub, config, hass.config.units.temperature_unit)]
     async_add_entities(entity)
 
-class CrestronThermostat(ClimateEntity):
 
+class CrestronThermostat(ClimateEntity):
     def __init__(self, hub, config, unit):
         self._hub = hub
-        self._hvac_modes = [HVAC_MODE_HEAT_COOL, HVAC_MODE_HEAT, HVAC_MODE_COOL, HVAC_MODE_OFF]
+        self._hvac_modes = [
+            HVAC_MODE_HEAT_COOL,
+            HVAC_MODE_HEAT,
+            HVAC_MODE_COOL,
+            HVAC_MODE_OFF,
+        ]
         self._fan_modes = [FAN_ON, FAN_AUTO]
         self._supported_features = SUPPORT_FAN_MODE | SUPPORT_TARGET_TEMPERATURE_RANGE
         self._should_poll = False
@@ -58,7 +64,9 @@ class CrestronThermostat(ClimateEntity):
 
         self._name = config[CONF_NAME]
         self._heat_sp_join = config[CONF_HEAT_SP_JOIN]
-        self._cool_sp_join = config[CONF_COOL_SP_JOIN,]
+        self._cool_sp_join = config[
+            CONF_COOL_SP_JOIN,
+        ]
         self._reg_temp_join = config[CONF_REG_TEMP_JOIN]
         self._mode_heat_join = config[CONF_MODE_HEAT_JOIN]
         self._mode_cool_join = config[CONF_MODE_COOL_JOIN]
@@ -71,7 +79,6 @@ class CrestronThermostat(ClimateEntity):
         self._c1_join = config[CONF_C1_JOIN]
         self._c1_join = config[CONF_C2_JOIN]
         self._fa_join = config[CONF_FA_JOIN]
-
 
     async def async_added_to_hass(self):
         self._hub.register_callback(self.process_callback)
@@ -112,15 +119,15 @@ class CrestronThermostat(ClimateEntity):
 
     @property
     def current_temperature(self):
-        return self._hub.get_analog(self._reg_temp_join)/10
+        return self._hub.get_analog(self._reg_temp_join) / 10
 
     @property
     def target_temperature_high(self):
-        return self._hub.get_analog(self._cool_sp_join)/10
+        return self._hub.get_analog(self._cool_sp_join) / 10
 
     @property
     def target_temperature_low(self):
-        return self._hub.get_analog(self._heat_sp_join)/10
+        return self._hub.get_analog(self._heat_sp_join) / 10
 
     @property
     def hvac_mode(self):
@@ -144,11 +151,12 @@ class CrestronThermostat(ClimateEntity):
     def hvac_action(self):
         if self._hub.get_digital(self._h1_join) or self._hub.get_digital(self._h2_join):
             return CURRENT_HVAC_HEAT
-        elif self._hub.get_digital(self._c1_join) or self._hub.get_digital(self._c2_join):
+        elif self._hub.get_digital(self._c1_join) or self._hub.get_digital(
+            self._c2_join
+        ):
             return CURRENT_HVAC_COOL
         else:
             return CURRENT_HVAC_IDLE
-
 
     async def async_set_hvac_mode(self, hvac_mode):
         if hvac_mode == HVAC_MODE_HEAT_COOL:
@@ -181,5 +189,5 @@ class CrestronThermostat(ClimateEntity):
             self._hub.set_digital(self._fan_on_join, True)
 
     async def async_set_temperature(self, **kwargs):
-        self._hub.set_analog(self._heat_sp_join, int(kwargs['target_temp_low'])*10)
-        self._hub.set_analog(self._cool_sp_join, int(kwargs['target_temp_high'])*10)
+        self._hub.set_analog(self._heat_sp_join, int(kwargs["target_temp_low"]) * 10)
+        self._hub.set_analog(self._cool_sp_join, int(kwargs["target_temp_high"]) * 10)

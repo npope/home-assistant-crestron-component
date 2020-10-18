@@ -1,28 +1,20 @@
 """Platform for Crestron Switch integration."""
 
 from homeassistant.components.switch import SwitchEntity
-from homeassistant.const import (
-    STATE_ON,
-    STATE_OFF,
-    CONF_NAME,
-    CONF_DEVICE_CLASS
-)
-from .const import (
-    HUB,
-    DOMAIN,
-    CONF_SWITCH_JOIN
-)
+from homeassistant.const import STATE_ON, STATE_OFF, CONF_NAME, CONF_DEVICE_CLASS
+from .const import HUB, DOMAIN, CONF_SWITCH_JOIN
 import logging
 
 _LOGGER = logging.getLogger(__name__)
+
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     hub = hass.data[DOMAIN][HUB]
     entity = [CrestronSwitch(hub, config)]
     async_add_entities(entity)
 
-class CrestronSwitch(SwitchEntity):
 
+class CrestronSwitch(SwitchEntity):
     def __init__(self, hub, config):
         self._hub = hub
         self._name = config[CONF_NAME]
@@ -59,14 +51,14 @@ class CrestronSwitch(SwitchEntity):
 
     @property
     def state(self):
-         if self._hub.get_digital(self._switch_join):
-             return STATE_ON
-         else:
-             return STATE_OFF
+        if self._hub.get_digital(self._switch_join):
+            return STATE_ON
+        else:
+            return STATE_OFF
 
     @property
     def is_on(self):
-         return self._hub.get_digital(self._switch_join)
+        return self._hub.get_digital(self._switch_join)
 
     async def async_turn_on(self, **kwargs):
         self._hub.set_digital(self._switch_join, True)

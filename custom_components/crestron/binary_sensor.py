@@ -1,30 +1,21 @@
 """Platform for Crestron Binary Sensor integration."""
 
 from homeassistant.helpers.entity import Entity
-from homeassistant.const import (
-    STATE_ON,
-    STATE_OFF,
-    CONF_NAME,
-    CONF_DEVICE_CLASS
-)
-from .const import (
-    HUB,
-    DOMAIN,
-    CONF_JOIN,
-    CONF_IS_ON_JOIN
-)
+from homeassistant.const import STATE_ON, STATE_OFF, CONF_NAME, CONF_DEVICE_CLASS
+from .const import HUB, DOMAIN, CONF_JOIN, CONF_IS_ON_JOIN
 
 import logging
 
 _LOGGER = logging.getLogger(__name__)
+
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     hub = hass.data[DOMAIN][HUB]
     entity = [CrestronBinarySensor(hub, config)]
     async_add_entities(entity)
 
-class CrestronBinarySensor(Entity):
 
+class CrestronBinarySensor(Entity):
     def __init__(self, hub, config):
         self._hub = hub
         self._name = config[CONF_NAME]

@@ -1,27 +1,21 @@
 """Platform for Crestron Light integration."""
 
 from homeassistant.components.light import LightEntity, SUPPORT_BRIGHTNESS
-from homeassistant.const import (
-    CONF_NAME,
-    CONF_TYPE
-)
-from .const import (
-    HUB,
-    DOMAIN,
-    CONF_BRIGHTNESS_JOIN
-)
+from homeassistant.const import CONF_NAME, CONF_TYPE
+from .const import HUB, DOMAIN, CONF_BRIGHTNESS_JOIN
 
 import logging
 
 _LOGGER = logging.getLogger(__name__)
+
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     hub = hass.data[DOMAIN][HUB]
     entity = [CrestronLight(hub, config)]
     async_add_entities(entity)
 
-class CrestronLight(LightEntity):
 
+class CrestronLight(LightEntity):
     def __init__(self, hub, config):
         self._hub = hub
         self._name = config[CONF_NAME]
@@ -57,19 +51,19 @@ class CrestronLight(LightEntity):
     @property
     def brightness(self):
         if self._supported_features == SUPPORT_BRIGHTNESS:
-            return int(self._hub.get_analog(self._brightness_join)/255)
+            return int(self._hub.get_analog(self._brightness_join) / 255)
 
     @property
     def is_on(self):
         if self._supported_features == SUPPORT_BRIGHTNESS:
-            if int(self._hub.get_analog(self._brightness_join)/255) > 0:
+            if int(self._hub.get_analog(self._brightness_join) / 255) > 0:
                 return True
             else:
                 return False
 
     async def async_turn_on(self, **kwargs):
         if "brightness" in kwargs:
-            self._hub.set_analog(self._brightness_join, int(kwargs['brightness']*255))
+            self._hub.set_analog(self._brightness_join, int(kwargs["brightness"] * 255))
         else:
             self._hub.set_analog(self._brightness_join, 65535)
 

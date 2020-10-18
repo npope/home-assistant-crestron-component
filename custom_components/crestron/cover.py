@@ -1,19 +1,19 @@
 """Platform for Crestron Shades integration."""
 
 from homeassistant.helpers.event import call_later
-from homeassistant.components.cover import (CoverEntity,
-        DEVICE_CLASS_SHADE,
-        SUPPORT_OPEN,
-        SUPPORT_CLOSE,
-        SUPPORT_SET_POSITION,
-        SUPPORT_STOP,
-        STATE_OPENING,
-        STATE_OPEN,
-        STATE_CLOSING,
-        STATE_CLOSED)
-from homeassistant.const import (
-    CONF_NAME
+from homeassistant.components.cover import (
+    CoverEntity,
+    DEVICE_CLASS_SHADE,
+    SUPPORT_OPEN,
+    SUPPORT_CLOSE,
+    SUPPORT_SET_POSITION,
+    SUPPORT_STOP,
+    STATE_OPENING,
+    STATE_OPEN,
+    STATE_CLOSING,
+    STATE_CLOSED,
 )
+from homeassistant.const import CONF_NAME
 from .const import (
     HUB,
     DOMAIN,
@@ -21,25 +21,28 @@ from .const import (
     CONF_IS_CLOSING_JOIN,
     CONF_IS_CLOSED_JOIN,
     CONF_STOP_JON,
-    CONF_POS_JOIN
+    CONF_POS_JOIN,
 )
-    
+
 import asyncio
 import logging
 
 _LOGGER = logging.getLogger(__name__)
+
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     hub = hass.data[DOMAIN][HUB]
     entity = [CrestronShade(hub, config)]
     async_add_entities(entity)
 
-class CrestronShade(CoverEntity):
 
+class CrestronShade(CoverEntity):
     def __init__(self, hub, config):
         self._hub = hub
         self._device_class = DEVICE_CLASS_SHADE
-        self._supported_features = SUPPORT_OPEN | SUPPORT_CLOSE | SUPPORT_SET_POSITION | SUPPORT_STOP
+        self._supported_features = (
+            SUPPORT_OPEN | SUPPORT_CLOSE | SUPPORT_SET_POSITION | SUPPORT_STOP
+        )
         self._should_poll = False
 
         self._name = config[CONF_NAME]
@@ -80,7 +83,7 @@ class CrestronShade(CoverEntity):
 
     @property
     def current_cover_position(self):
-        return self._hub.get_analog(self._pos_join)/655.35
+        return self._hub.get_analog(self._pos_join) / 655.35
 
     @property
     def is_opening(self):
@@ -95,7 +98,7 @@ class CrestronShade(CoverEntity):
         return self._hub.get_digital(self._is_closed_join)
 
     async def async_set_cover_position(self, **kwargs):
-        self._hub.set_analog(self._pos_join, int(kwargs['position'])*655)
+        self._hub.set_analog(self._pos_join, int(kwargs["position"]) * 655)
 
     async def async_open_cover(self, **kwargs):
         self._hub.set_analog(self._pos_join, 0xFFFF)
