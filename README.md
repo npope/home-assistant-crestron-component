@@ -18,13 +18,6 @@ Currently supported devices:
     - The component acts as a TCP server, so you must specify the port number to listen on using the `port:` parameter.
   - Restart Home Assistant
 
-Minimal `configuration.yaml`:
-
-```yaml
-crestron:
-  port: 16384
-```
-
 ## On the control system
  - Add a TCP/IP Client device to the control system
  - Configure the client device with the IP address of Home Assistant
@@ -39,7 +32,14 @@ crestron:
  
 ## Home Assistant configuration.yaml
 
-Add entries for each HA component/platform type to your configuration.yaml for the appropriate entity type in Home Assistant:
+The `crestron:` entry is mandatory as is the `port:` definition under it.  So at a minimum, you will need:
+
+```yaml
+crestron:
+  port: 16384
+```
+
+Then, add entries for each HA component/platform type to your configuration.yaml for the appropriate entity type in Home Assistant:
 
 |Crestron Device|Home Assistant component type|
 |---|---|
@@ -51,7 +51,39 @@ Add entries for each HA component/platform type to your configuration.yaml for t
 |read-write Digital Join|switch|
 |Audio/Video Switcher|media_player|
 
-If you want to make use of the control surface (touchpanels/kepads) syncing capability, you will need to add a `crestron` section as well, with either a `to_joins`, a `from_joins` section, or both (see below).
+Finally, if you want to make use of the control surface (touchpanels/kepads) syncing capability, you will need to add either a `to_joins`, a `from_joins` section, or both (see below).
+
+>To be clear: if you configure multiple platforms (light, cover, climate, ...) plus synchronization in both directions, your configuration.yaml will look something like:
+
+```yaml
+crestron:
+  port: 32768
+  to_joins:
+  ...
+  from_joins:
+  ...
+light:
+  - platform: crestron
+  ...
+climate:
+  - platform: crestron
+  ...
+cover:
+  - platform: crestron
+  ...
+binary_sensor:
+  - platform: crestron
+  ...
+sensor:
+  - platform: crestron
+  ...
+switch:
+  - platform: crestron
+  ...
+media_player:
+  - platform: crestron
+  ...
+```
 
 ### Lights
 
