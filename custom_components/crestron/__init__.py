@@ -23,7 +23,7 @@ from homeassistant.const import (
     CONF_SERVICE_DATA,
 )
 
-from .crestron import CrestronHub
+from .crestron import CrestronXsig
 from .const import CONF_PORT, HUB, DOMAIN, CONF_JOIN, CONF_SCRIPT, CONF_TO_HUB, CONF_FROM_HUB
 #from .control_surface_sync import ControlSurfaceSync
 
@@ -71,38 +71,31 @@ PLATFORMS = [
 
 async def async_setup(hass, config):
     """Set up a the crestron component."""
-    hass.data[DOMAIN] = {}
-    hub = CrestronHub()
-    hass.data[DOMAIN][HUB] = hub
 
-    if CONF_TO_HUB in config[DOMAIN] or CONF_FROM_HUB in config[DOMAIN]:
-        syncer = ControlSurfaceSync(hass, config)
-    else:
-        syncer = None
+    if config.get[DOMAIN] is not None:
+        hass.data[DOMAIN] = {}
+        hub = CrestronHub(hass, config[DOMAIN])
 
-    def stop(event):
-        hub.stop()
-        if syncer:
-            syncer.stop()
+        await hub.start()
+        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, hub.stop)
 
-    await hub.start(config[DOMAIN][CONF_PORT])
-    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, stop)
-
-    for platform in PLATFORMS:
-        async_load_platform(hass, platform, DOMAIN, {}, config)
+        for platform in PLATFORMS:
+            async_load_platform(hass, platform, DOMAIN, {}, config)
 
     return True
 
-class ControlSurfaceSync:
+class CrestronHub:
+    ''' Wrapper for the CrestronXsig library '''
     def __init__(self, hass, config):
         self.hass = hass
-        self.hub = hass.data[DOMAIN][HUB]
+        self.hub = hass.data[DOMAIN][HUB] = CrestronXsig()
+        self.port = config.get(CONF_PORT)
         self.context = Context()
         self.to_hub = {}
         self.hub.register_sync_all_joins_callback(self.sync_joins_to_hub)
-        if CONF_TO_HUB in config[DOMAIN]:
+        if CONF_TO_HUB in config:
             track_templates = []
-            for entity in config[DOMAIN][CONF_TO_HUB]:
+            for entity in config[CONF_TO_HUB]:
                 template_string = None
                 if CONF_VALUE_TEMPLATE in entity:
                     template = entity[CONF_VALUE_TEMPLATE]
@@ -127,9 +120,18 @@ class ControlSurfaceSync:
             self.tracker = async_track_template_result(
                 self.hass, track_templates, self.template_change_callback
             )
-        if CONF_FROM_HUB in config[DOMAIN]:
-            self.from_hub = config[DOMAIN][CONF_FROM_HUB]
+        if CONF_FROM_HUB in config:
+            self.from_hub = config[CONF_FROM_HUB]
             self.hub.register_callback(self.join_change_callback)
+
+    async def start(self):
+        await self.hub.listen(self.port)
+
+    def stop(self, event):
+        """ remove callback(s) and template trackers """
+        self.hub.remove_callback(self.join_change_callback)
+        self.tracker.async_remove()
+        self.hub.stop()
 
     async def join_change_callback(self, cbtype, value):
         """ Call service for tracked join change (from_hub)"""
@@ -225,7 +227,3 @@ class ControlSurfaceSync:
                     )
                     self.hub.set_serial(int(join[1:]), str(result))
 
-    def stop(self):
-        """ remove callback(s) and template trackers """
-        self.hub.remove_callback(self.join_change_callback)
-        self.tracker.async_remove()

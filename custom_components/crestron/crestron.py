@@ -4,9 +4,9 @@ import logging
 
 _LOGGER = logging.getLogger(__name__)
 
-class CrestronHub:
+class CrestronXsig:
     def __init__(self):
-        """ Initialize CrestronHub object """
+        """ Initialize CrestronXsig object """
         self._digital = {}
         self._analog = {}
         self._serial = {}
@@ -16,7 +16,7 @@ class CrestronHub:
         self._available = False
         self._sync_all_joins_callback = None
 
-    async def start(self, port):
+    async def listen(self, port):
         """ Start TCP XSIG server listening on configured port """
         server = await asyncio.start_server(self.handle_connection, "0.0.0.0", port)
         self._server = server
