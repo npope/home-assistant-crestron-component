@@ -2,13 +2,13 @@
 Integration for Home Assistant for the Crestron XSIG symbol
 
 Currently supported devices:
-  - Lights (Any device that can be represented as an Analog join for brightness on the control system)
-  - Thermostat (Anything that looks like a CHV-TSTAT/THSTAT)
-  - Shades (Any shade that uses an analog join for position plus digital joins for is_opening/closing, is_open/closed.  I tested with CSM-QMTDC shades)
-  - Binary Sensor (any digital signal on the control system - read only)
-  - Sensor (any analog signal on the control system - read only)
-  - Switch (any digital signal on the contol system - read / write)
-  - Media Player (Can represent a multi-zone switcher.  Tested with PAD8A)
+  - Lights
+  - Thermostats
+  - Shades 
+  - Binary Sensor
+  - Sensor 
+  - Switch 
+  - Media Player
 
 ## Adding the component to Home Assistant
 
@@ -89,6 +89,8 @@ media_player:
 
 ### Lights
 
+This platform supports monochromatic "brightness" type lights (basically, anything that can have its brightness represented by an analog join on the control system).  I tested this with a CLX-1DIM8 panel and multiple CLW-DIMEX switches.
+
 ```yaml
 light:
   - platform: crestron
@@ -101,6 +103,10 @@ light:
  - _type_: The only supported value for now is *brightness*.  TODO: add support for other HA light types.
 
 ### Thermostat
+
+This platform should work with anything that looks like a CHV-TSTAT/THSTAT (analog joins for heat, cooling setpoints, digital joins for modes, fan modes, and relay states).  I tested this with multiple CHV-TSTAT and CHV-THSTATs.
+
+>TODO: Add support for humidity control on CHV_THSTAT.
 
 ```yaml
 climate:
@@ -121,7 +127,6 @@ climate:
     fa_join: 10
 ```
 
-This configuration is based on THV-TSTAT/THSTATs, but should work with any thermostat that can be represented by similar analog/digital joins.
 - _name_: The entity id will be derived from this string (lower-cased with _ for spaces).  The friendly name will be set to this string.
 - _heat_sp_join_: analog join that represents the heat setpoint
 - _cool_sp_join_: analog join that represents the cool setpoint
@@ -139,6 +144,8 @@ This configuration is based on THV-TSTAT/THSTATs, but should work with any therm
 
 ### Shades
 
+This should work with any shade that uses an analog join for position plus digital joins for is_opening/closing, is_closed and stop.  I tested with CSM-QMTDC shades.
+
 ```yaml
 cover:
   - platform: crestron
@@ -150,6 +157,7 @@ cover:
     stop_join: 43
     is_closed_join: 44
 ```
+
 - _name_: The entity id will be derived from this string (lower-cased with _ for spaces).  The friendly name will be set to this string.
 - _pos_join_: analog join that represents the shade position.  The value follow the typical definition for a Crestron analog shade (0 = closed, 65535 = open).
 - _is_opening_join_: digital feedback (read-only) join that is high when shade is in the process of opening
@@ -159,6 +167,8 @@ cover:
 
 ### Binary Sensor
 
+This can represent any read-only digital signal on the control system.  I typically comment out the "in" signals on the XSIG symbol to keep the "in" and "out" signals lined up.
+
 ```yaml
 binary_sensor:
   - platform: crestron
@@ -167,12 +177,17 @@ binary_sensor:
     device_class: power
 ```
 
-Use this for any digital join in the control system that you would like to represent as a binary sensor (on/off) in Home Assistant.
 - _name_: The entity id will be derived from this string (lower-cased with _ for spaces).  The friendly name will be set to this string.
 - _is_on_join_: digital feedback (read-only) join to represent as a binary sensor in Home Assistant
 - _device_class_: any device class [supported by the binary_sensor](https://www.home-assistant.io/integrations/binary_sensor/) integration.  This mostly affects how the value will be expressed in various UIs.
 
 ### Sensor
+
+This can represent any read-only analog signal on the control system.  I typically comment out the "in" signals on the XSIG symbol to keep the "in" and "out" signals lined up.  Remember that an analog join on the control system is a 16-bit value that can range from 0-65535.  So for many symbol types (especially those representing a brightness or percent) you will need to make use of the `divisor:` parameter.
+
+Example divisors:
+ - For sensors that return 10ths of a degree: 10
+ - For joins that represent a percent: 655.35 (to convert the 1-65535 range to 1-100)
 
 ```yaml
 sensor:
@@ -183,7 +198,7 @@ sensor:
     unit_of_measurement: "F"
     divisor: 10
 ```
-Use this for any analog join in the control system that you would like to represent as a sensor in Home Assistant.
+
 - _name_: The entity id will be derived from this string (lower-cased with _ for spaces).  The friendly name will be set to this string.
 - _value_join_: analog join to represent as a sensor in Home Assistant
 - _device_class_: any device class [supported by the sensor](https://www.home-assistant.io/integrations/sensor/) integration.  This mostly affects how the value will be expressed in various UIs.
@@ -192,17 +207,23 @@ Use this for any analog join in the control system that you would like to repres
 
 ### Switch
 
+This could represent any digital signal on the contol system that you want to be able to control/view from HA.
+
 ```yaml
 switch:
   - platform: crestron
     name: "Dummy Switch"
     switch_join: 65
 ```
-Use this for any digital join in the control system that you would like to control via a toggle (on/off) switch in Home Assistant.
+
 - _name_: The entity id will be derived from this string (lower-cased with _ for spaces).  The friendly name will be set to this string.
 - _switch_join_: digital join to represent as a switch in Home Assistant
 
 ### Media Player
+
+Use media_player to represent the output of a multi-zone switcher.  For example a PAD-8A is an 8x8 (8 inputs x 8 outputs) audio switcher.  This can be represented by 8 media player components (one for each output).  The component supports source selection (input selection) and volume + mute control.  So it is modeled as a "speaker" media player type in Home Assistant.
+
+This works rather nicely with the template media player integration to allow intuitive control of source devices connected to a multi-zone switcher like the PAD8A.
 
 ```yaml
 media_player:
@@ -220,7 +241,6 @@ media_player:
       8: "Crestron Streamer"
 ```
 
-You can use this to represent output channels of an AV switcher.  For example a PAD-8A is an 8x8 (8 inputs x 8 outputs) audio switcher.  This can be represented by 8 media player components (one for each output).  This component supported source selection (input selection) and volume+mute control.  So it is modeled as a "speaker" media player type in Home Assistant.
 - _name_: The entity id will be derived from this string (lower-cased with _ for spaces).  The friendly name will be set to this string.
 - _mute_join_: digital join that represents the mute state of the channel.  Note this is not a toggle. Both to and from the control system True = muted, False = not muted.  This might require some extra logic on the control system side if you only have logic that takes a toggle.
 - _volume_join_: analog join that represents the volume of the channel (0-65535)
@@ -229,11 +249,11 @@ You can use this to represent output channels of an AV switcher.  For example a 
 
 ### Control Surface Sync
 
-If you have Crestron touch panels or keypads, it can be useful to keep certain joins in sync with Home Assistant state and to be able to invoke Home Assistant functionality (via a script) when a join changes.  This functionality was added with v0.2.  There are two directions to sync: from HA to the control system and from the control system states to HA.
+If you have Crestron touch panels or keypads, it can be useful to keep certain feedback/display joins in sync with Home Assistant state and to be able to invoke Home Assistant functionality (via a script) when a button is pressed or a join changes.  This functionality was added with v0.2.  There are two directions to sync: from HA states to control system joins and from control system joins to HA (using scripts).
 
-Since this functionality is not necessarily associated with any HA entity, the configuration will live under the root `crestron:` key in `configuration.yaml`.  There are two sections:
+There are two sections in `configuration.yaml` under the root `crestron:` key:
 - `to_joins` for syncing HA state to control system joins
-- `from_joins` for syncing control system joins to HA
+- `from_joins` for invoking HA scripts when control system joins change
 
 ```yaml
 crestron:
@@ -328,5 +348,5 @@ crestron:
 
  - _from_joins_: begins the section
  - _join_: for each join, list the join type and number.  The type prefix is 'a' for analog joins, 'd' for digital joins and 's' for serial joins.  So s32 would be serial join #32.  Any change in the listed join will invoke the configured behavior.
- - _script_: This is a standard HA script.  It follows the standard [HA scripting sytax](https://www.home-assistant.io/docs/scripts/).
+ - _script_: This is a standard HA script.  It follows the [HA scripting sytax](https://www.home-assistant.io/docs/scripts/).
 
