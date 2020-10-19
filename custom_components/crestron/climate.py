@@ -60,7 +60,8 @@ PLATFORM_SCHEMA = vol.Schema(
         vol.Required(CONF_C1_JOIN): cv.positive_int,
         vol.Optional(CONF_C2_JOIN): cv.positive_int,
         vol.Required(CONF_FA_JOIN): cv.positive_int,
-    }
+    },
+    extra=vol.ALLOW_EXTRA,
 )
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):

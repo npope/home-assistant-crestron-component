@@ -16,7 +16,8 @@ PLATFORM_SCHEMA = vol.Schema(
         vol.Required(CONF_NAME): cv.string,
         vol.Required(CONF_IS_ON_JOIN): cv.positive_int,           
         vol.Required(CONF_DEVICE_CLASS): cv.string,
-    }
+    },
+    extra=vol.ALLOW_EXTRA,
 )
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):

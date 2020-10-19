@@ -37,7 +37,8 @@ PLATFORM_SCHEMA = vol.Schema(
         vol.Required(CONF_SOURCE_NUM_JOIN): cv.positive_int,           
         vol.Required(CONF_VOLUME_JOIN): cv.positive_int,
         vol.Required(CONF_SOURCES): SOURCES_SCHEMA,
-    }
+    },
+    extra=vol.ALLOW_EXTRA,
 )
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
