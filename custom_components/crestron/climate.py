@@ -64,9 +64,7 @@ class CrestronThermostat(ClimateEntity):
 
         self._name = config[CONF_NAME]
         self._heat_sp_join = config[CONF_HEAT_SP_JOIN]
-        self._cool_sp_join = config[
-            CONF_COOL_SP_JOIN,
-        ]
+        self._cool_sp_join = config[CONF_COOL_SP_JOIN]
         self._reg_temp_join = config[CONF_REG_TEMP_JOIN]
         self._mode_heat_join = config[CONF_MODE_HEAT_JOIN]
         self._mode_cool_join = config[CONF_MODE_COOL_JOIN]
@@ -75,9 +73,9 @@ class CrestronThermostat(ClimateEntity):
         self._fan_on_join = config[CONF_FAN_ON_JOIN]
         self._fan_auto_join = config[CONF_FAN_AUTO_JOIN]
         self._h1_join = config[CONF_H1_JOIN]
-        self._h2_join = config[CONF_H2_JOIN]
+        self._h2_join = config.get(CONF_H2_JOIN)
         self._c1_join = config[CONF_C1_JOIN]
-        self._c1_join = config[CONF_C2_JOIN]
+        self._c2_join = config.get(CONF_C2_JOIN)
         self._fa_join = config[CONF_FA_JOIN]
 
     async def async_added_to_hass(self):
@@ -151,9 +149,7 @@ class CrestronThermostat(ClimateEntity):
     def hvac_action(self):
         if self._hub.get_digital(self._h1_join) or self._hub.get_digital(self._h2_join):
             return CURRENT_HVAC_HEAT
-        elif self._hub.get_digital(self._c1_join) or self._hub.get_digital(
-            self._c2_join
-        ):
+        elif self._hub.get_digital(self._c1_join) or self._hub.get_digital(self._c2_join):
             return CURRENT_HVAC_COOL
         else:
             return CURRENT_HVAC_IDLE
