@@ -18,11 +18,10 @@ from homeassistant.components.cover import (
     STATE_CLOSING,
     STATE_CLOSED,
 )
-from homeassistant.const import CONF_NAME
+from homeassistant.const import CONF_NAME, CONF_TYPE
 from .const import (
     HUB,
     DOMAIN,
-    CONF_TYPE,
     CONF_IS_OPENING_JOIN,
     CONF_IS_CLOSING_JOIN,
     CONF_IS_CLOSED_JOIN,
