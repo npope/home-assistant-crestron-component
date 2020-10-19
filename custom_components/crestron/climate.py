@@ -1,5 +1,9 @@
 """Platform for Crestron Thermostat integration."""
 
+import voluptuous as vol
+import logging
+
+import homeassistant.helpers.config_validation as cv
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import (
     SUPPORT_FAN_MODE,
@@ -37,10 +41,27 @@ from .const import (
     CONF_FA_JOIN,
 )
 
-import logging
-
 _LOGGER = logging.getLogger(__name__)
 
+PLATFORM_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_NAME): cv.string,
+        vol.Required(CONF_HEAT_SP_JOIN): cv.positive_integer,
+        vol.Required(CONF_COOL_SP_JOIN): cv.positive_integer,           
+        vol.Required(CONF_REG_TEMP_JOIN): cv.positive_integer,
+        vol.Required(CONF_MODE_HEAT_JOIN): cv.positive_integer,
+        vol.Required(CONF_MODE_COOL_JOIN): cv.positive_integer,
+        vol.Required(CONF_MODE_AUTO_JOIN): cv.positive_integer,
+        vol.Required(CONF_MODE_OFF_JOIN): cv.positive_integer,
+        vol.Required(CONF_FAN_ON_JOIN): cv.positive_integer,
+        vol.Required(CONF_FAN_AUTO_JOIN): cv.positive_integer,
+        vol.Required(CONF_H1_JOIN): cv.positive_integer,
+        vol.Optional(CONF_H2_JOIN): cv.positive_integer,
+        vol.Required(CONF_C1_JOIN): cv.positive_integer,
+        vol.Optional(CONF_C2_JOIN): cv.positive_integer,
+        vol.Required(CONF_FA_JOIN): cv.positive_integer,
+    }
+)
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     hub = hass.data[DOMAIN][HUB]
