@@ -14,7 +14,7 @@ Currently supported devices:
 
   - Add the `crestron` directory to `config/custom_components`
   - Add the appropriate sections to `configuration.yaml` (see below)
-  - Add a "crestron:" block to the root of your configuration.yaml
+  - Add a `crestron:` block to the root of your `configuration.yaml`
     - The component acts as a TCP server, so you must specify the port number to listen on using the `port:` parameter.
   - Restart Home Assistant
 
@@ -22,13 +22,15 @@ Currently supported devices:
  - Add a TCP/IP Client device to the control system
  - Configure the client device with the IP address of Home Assistant
  - Set the port number on the TCP/IP client symbol to match what you have configured for `port:` in `configuration.yaml`
+ - Wire up logic to the `Connect` signal of your TCP/IP client (or just set it to `1` to have it connected all the time)
  - Add an "Intersystem Communication" symbol (quick key = xsig).
+ - Connect the TX & RX of the XSIG symbol to the TCP/IP Client.
  - Attach your Analog, Serial and Digital signals to the input/output joins.
    - Note you can use multiple XSIGs attached to the same TCP/IP Client serials.  I found its simplest to use one for digitals and one for analogs/serials to keep the numbering simpler (see below).
   
-> Caution: Be careful when mixing analog/serials and digtals on the same XSIG symbol.  Even though the symbol starts numbering the digitals at "1", the XSIG will actually send the join number for where the symbol appears sequentially in the entire list of signals.
-> For example, if you have 25 analog signals followed by 10 digital signals attached to the same XSIG, the digitals will be sent as 26-35, not 1-10 (even though they are labeled dig_xx1 - digxx10 on the symbol).  You can either account for this in your configuration on the HA side, or just use one symbol for Analogs and another for Digitals to keep the numbering easy.
-> Since the XSIG lets you combine Analog/Serial joins on the same symbol, you can simply have one XSIG for Analog/Serial joins and another for digitals.  This keeps the join numbering simple.
+> Caution: Join numbers can be confusing when mixing analog/serials and digtals on the same XSIG symbol.  Even though the symbol starts numbering the digitals at "1", the XSIG will actually send the join number corresponding to where the signal appears sequentially in the entire list of signals.
+> For example, if you have 25 analog signals followed by 10 digital signals attached to the same XSIG, the digitals will be sent as 26-35, even though they are labeled 1 - 10 on the symbol.  You can either account for this in your configuration on the HA side, or just use one symbol for Analogs and another for Digitals.
+> Since the XSIG lets you combine Analog/Serial joins on the same symbol, you can have one XSIG for Analog/Serial joins and another for digitals.  This keeps the join numbering simple.
  
 ## Home Assistant configuration.yaml
 
@@ -248,8 +250,8 @@ The `to_joins` section will list all the joins you want to map HA state changes 
  - a simple `entity_id` with optional `attribute` to map entity state directly to a join.
  - a `value_template` that lets you map almost any combination of state values (including the full power of [template logic](https://www.home-assistant.io/docs/configuration/templating/)) to the listed join.
 
- ```yaml
- crestron:
+```yaml
+crestron:
   port: 12345
   ...
   to_joins:
@@ -263,7 +265,7 @@ The `to_joins` section will list all the joins you want to map HA state changes 
       entity_id: media_player.kitchen
       attribute: volume_level
     - join: s4
-      value_template: "http://hassio:8123{{ state_attr('media_player.volumio', 'entity_picture') }}"
+      value_template: "http://homeassistant:8123{{ state_attr('media_player.volumio', 'entity_picture') }}"
 ```  
  
  - _to_joins_: begins the section
@@ -283,12 +285,45 @@ crestron:
   port: 54321
   ...
   from_joins:
-      - join: a2
-        script:
-          service: input_text.set_value
-          data:
-            entity_id: input_text.test
-            value: "Master BR temperature is {{value|int / 10}}"
+    - join: a2
+      script:
+        service: input_text.set_value
+        data:
+          entity_id: input_text.test
+          value: "Master BR temperature is {{value|int / 10}}"
+    - join: d35
+      script:
+        service: media_player.media_previous_track
+        data:
+          entity_id: media_player.volumio
+    - join: d36
+      script:
+        service: media_player.media_play_pause
+        data:
+          entity_id: media_player.volumio
+    - join: d37
+      script:
+        service: media_player.media_next_track
+        data:
+          entity_id: media_player.volumio
+    - join: d74
+      script:
+        service: media_player.select_source
+        data:
+          entity_id: media_player.volumio
+          source: "{{state_attr('media_player.volumio', 'source_list')[0]}}"
+    - join: d75
+      script:
+        service: media_player.select_source
+        data:
+          entity_id: media_player.volumio
+          source: "{{state_attr('media_player.volumio', 'source_list')[1]}}"
+    - join: d76
+      script:
+        service: media_player.select_source
+        data:
+          entity_id: media_player.volumio
+          source: "{{state_attr('media_player.volumio', 'source_list')[2]}}"
 ```
 
  - _from_joins_: begins the section
