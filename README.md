@@ -39,7 +39,9 @@ crestron:
   port: 16384
 ```
 
-Then, add entries for each HA component/platform type to your configuration.yaml for the appropriate entity type in Home Assistant:
+Then, if you want to make use of the control surface (touchpanels/kepads) syncing capability, you will need to add either a `to_joins`, a `from_joins` section, or both (see below).
+
+Finally, add entries for each HA component/platform type to your configuration.yaml for the appropriate entity type in Home Assistant:
 
 |Crestron Device|Home Assistant component type|
 |---|---|
@@ -50,8 +52,6 @@ Then, add entries for each HA component/platform type to your configuration.yaml
 |read-only Analog Join|sensor|
 |read-write Digital Join|switch|
 |Audio/Video Switcher|media_player|
-
-Finally, if you want to make use of the control surface (touchpanels/kepads) syncing capability, you will need to add either a `to_joins`, a `from_joins` section, or both (see below).
 
 >To be clear: if you configure multiple platforms (light, cover, climate, ...) plus synchronization in both directions, your configuration.yaml will look something like:
 
