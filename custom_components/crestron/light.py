@@ -13,7 +13,7 @@ PLATFORM_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_NAME): cv.string,
         vol.Required(CONF_TYPE): cv.string,
-        vol.Required(CONF_BRIGHTNESS_JOIN): cv.positive_integer,           
+        vol.Required(CONF_BRIGHTNESS_JOIN): cv.positive_int,           
     }
 )
 

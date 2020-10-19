@@ -14,7 +14,7 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORM_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_NAME): cv.string,
-        vol.Required(CONF_IS_ON_JOIN): cv.positive_integer,           
+        vol.Required(CONF_IS_ON_JOIN): cv.positive_int,           
         vol.Required(CONF_DEVICE_CLASS): cv.string,
     }
 )

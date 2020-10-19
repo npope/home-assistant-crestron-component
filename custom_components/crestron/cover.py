@@ -35,11 +35,11 @@ PLATFORM_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_NAME): cv.string,
         vol.Required(CONF_TYPE): cv.string,
-        vol.Required(CONF_POS_JOIN): cv.positive_integer,           
-        vol.Required(CONF_IS_OPENING_JOIN): cv.positive_integer,
-        vol.Required(CONF_IS_CLOSING_JOIN): cv.positive_integer,
-        vol.Required(CONF_IS_CLOSED_JOIN): cv.positive_integer,
-        vol.Required(CONF_STOP_JOIN): cv.positive_integer,
+        vol.Required(CONF_POS_JOIN): cv.positive_int,           
+        vol.Required(CONF_IS_OPENING_JOIN): cv.positive_int,
+        vol.Required(CONF_IS_CLOSING_JOIN): cv.positive_int,
+        vol.Required(CONF_IS_CLOSED_JOIN): cv.positive_int,
+        vol.Required(CONF_STOP_JOIN): cv.positive_int,
     }
 )
 
