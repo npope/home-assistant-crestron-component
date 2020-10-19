@@ -21,7 +21,7 @@ Currently supported devices:
 ## On the control system
  - Add a TCP/IP Client device to the control system
  - Configure the client device with the IP address of Home Assistant
- - Set the port number on the TCP/IP client symbol to 16384 (TODO: make this configurable)
+ - Set the port number on the TCP/IP client symbol to match what you have configured for `port:` in `configuration.yaml`
  - Add an "Intersystem Communication" symbol (quick key = xsig).
  - Attach your Analog, Serial and Digital signals to the input/output joins.
    - Note you can use multiple XSIGs attached to the same TCP/IP Client serials.  I found its simplest to use one for digitals and one for analogs/serials to keep the numbering simpler (see below).
