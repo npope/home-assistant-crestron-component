@@ -72,7 +72,7 @@ PLATFORMS = [
 async def async_setup(hass, config):
     """Set up a the crestron component."""
 
-    if config.get[DOMAIN] is not None:
+    if config.get(DOMAIN) is not None:
         hass.data[DOMAIN] = {}
         hub = CrestronHub(hass, config[DOMAIN])
 
