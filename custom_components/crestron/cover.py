@@ -1,5 +1,10 @@
 """Platform for Crestron Shades integration."""
 
+import asyncio
+import logging
+import voluptuous as vol
+
+import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.event import call_later
 from homeassistant.components.cover import (
     CoverEntity,
@@ -17,40 +22,49 @@ from homeassistant.const import CONF_NAME
 from .const import (
     HUB,
     DOMAIN,
+    CONF_TYPE,
     CONF_IS_OPENING_JOIN,
     CONF_IS_CLOSING_JOIN,
     CONF_IS_CLOSED_JOIN,
-    CONF_STOP_JON,
+    CONF_STOP_JOIN,
     CONF_POS_JOIN,
 )
 
-import asyncio
-import logging
-
 _LOGGER = logging.getLogger(__name__)
 
+PLATFORM_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_NAME): cv.string,
+        vol.Required(CONF_TYPE): cv.string,
+        vol.Required(CONF_POS_JOIN): cv.positive_integer,           
+        vol.Required(CONF_IS_OPENING_JOIN): cv.positive_integer,
+        vol.Required(CONF_IS_CLOSING_JOIN): cv.positive_integer,
+        vol.Required(CONF_IS_CLOSED_JOIN): cv.positive_integer,
+        vol.Required(CONF_STOP_JOIN): cv.positive_integer,
+    }
+)
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     hub = hass.data[DOMAIN][HUB]
     entity = [CrestronShade(hub, config)]
     async_add_entities(entity)
 
-
 class CrestronShade(CoverEntity):
     def __init__(self, hub, config):
         self._hub = hub
-        self._device_class = DEVICE_CLASS_SHADE
-        self._supported_features = (
-            SUPPORT_OPEN | SUPPORT_CLOSE | SUPPORT_SET_POSITION | SUPPORT_STOP
-        )
+        if config.get(CONF_TYPE) == "shade":
+            self._device_class = DEVICE_CLASS_SHADE
+            self._supported_features = (
+                SUPPORT_OPEN | SUPPORT_CLOSE | SUPPORT_SET_POSITION | SUPPORT_STOP
+            )
         self._should_poll = False
 
-        self._name = config[CONF_NAME]
-        self._is_opening_join = config[CONF_IS_OPENING_JOIN]
-        self._is_closing_join = config[CONF_IS_CLOSING_JOIN]
-        self._is_closed_join = config[CONF_IS_CLOSED_JOIN]
-        self._stop_join = config[CONF_STOP_JON]
-        self._pos_join = config[CONF_POS_JOIN]
+        self._name = config.get(CONF_NAME)
+        self._is_opening_join = config.get(CONF_IS_OPENING_JOIN)
+        self._is_closing_join = config.get(CONF_IS_CLOSING_JOIN)
+        self._is_closed_join = config.get(CONF_IS_CLOSED_JOIN)
+        self._stop_join = config.get(CONF_STOP_JOIN)
+        self._pos_join = config.get(CONF_POS_JOIN)
 
     async def async_added_to_hass(self):
         self._hub.register_callback(self.process_callback)
