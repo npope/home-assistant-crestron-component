@@ -22,7 +22,6 @@ from homeassistant.const import (
     CONF_SERVICE,
     CONF_SERVICE_DATA,
 )
-from homeassistant.helpers.config_validation import SCRIPT_SCHEMA
 
 from .crestron import CrestronHub
 from .const import CONF_PORT, HUB, DOMAIN, CONF_JOIN, CONF_SCRIPT, CONF_TO_HUB, CONF_FROM_HUB
@@ -42,7 +41,7 @@ TO_JOINS_SCHEMA = vol.Schema(
 FROM_JOINS_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_JOIN): cv.string,
-        vol.Required(CONF_SCRIPT): SCRIPT_SCHEMA
+        vol.Required(CONF_SCRIPT): cv.SCRIPT_SCHEMA
     }
 )
 
