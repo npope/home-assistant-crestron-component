@@ -14,7 +14,16 @@ Currently supported devices:
 
   - Add the `crestron` directory to `config/custom_components`
   - Add the appropriate sections to `configuration.yaml` (see below)
+  - Add a "crestron:" block to the root of your configuration.yaml
+    - The component acts as a TCP server, so you must specify the port number to listen on using the `port:` parameter.
   - Restart Home Assistant
+
+Minimal `configuration.yaml`:
+
+```yaml
+crestron:
+  port: 16384
+```
 
 ## On the control system
  - Add a TCP/IP Client device to the control system
@@ -194,6 +203,7 @@ Since this functionality is not necessarily associated with any HA entity, the c
 
 ```yaml
 crestron:
+  port: 5555
   to_joins:
   ...
   from_joins:
@@ -208,6 +218,8 @@ The `to_joins` section will list all the joins you want to map HA state changes 
 
  ```yaml
  crestron:
+  port: 12345
+  ...
   to_joins:
     - join: d12
       entity_id: switch.compressor
@@ -235,13 +247,16 @@ The `to_joins` section will list all the joins you want to map HA state changes 
  The `from_joins` section will list all the joins you want to track from the control system.  When each join changes the configured functionality will be invoked.
 
  ```yaml
- from_joins:
-    - join: a2
-      script:
-        service: input_text.set_value
-        data:
-          entity_id: input_text.test
-          value: "Master BR temperature is {{value|int / 10}}"
+crestron:
+  port: 54321
+  ...
+  from_joins:
+      - join: a2
+        script:
+          service: input_text.set_value
+          data:
+            entity_id: input_text.test
+            value: "Master BR temperature is {{value|int / 10}}"
 ```
 
  - _from_joins_: begins the section
