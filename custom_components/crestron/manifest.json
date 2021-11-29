@@ -4,6 +4,6 @@
   "documentation": "https://github.com/npope/home-assistant-crestron-component/blob/master/README.md",
   "dependencies": [],
   "codeowners": ["@npope"],
-  "requirements": []
+  "requirements": [],
   "version": "0.2.3"
 }
