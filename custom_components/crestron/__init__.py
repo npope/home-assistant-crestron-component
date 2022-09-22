@@ -214,14 +214,14 @@ class CrestronHub:
                     self.hub.set_digital(int(join[1:]), value)
             # Analog Join
             if join[:1] == "a":
-                if result != "None":
+                if result != "None" and result is not None:
                     _LOGGER.debug(
                         f"sync_joins_to_hub setting analog join {int(join[1:])} to {int(result)}"
                     )
                     self.hub.set_analog(int(join[1:]), int(result))
             # Serial Join
             if join[:1] == "s":
-                if result != "None":
+                if result != "None" and result is not None:
                     _LOGGER.debug(
                         f"sync_joins_to_hub setting serial join {int(join[1:])} to {str(result)}"
                     )
