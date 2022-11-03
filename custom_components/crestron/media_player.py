@@ -99,7 +99,7 @@ class CrestronRoom(MediaPlayerEntity):
     @property
     def source(self):
         source_num = self._hub.get_analog(self._source_number_join)
-        if source_num == 0:
+        if source_num == 0 or source_num not in self._sources:
             return None
         else:
             return self._sources[source_num]
