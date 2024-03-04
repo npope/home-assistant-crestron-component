@@ -1,9 +1,9 @@
 {
   "domain": "crestron",
   "name": "Crestron XSIG Integraton",
-  "documentation": "https://github.com/npope/home-assistant-crestron-component/blob/master/README.md",
+  "documentation": "https://github.com/georgesak/home-assistant-crestron-component/blob/master/README.md",
   "dependencies": [],
-  "codeowners": ["@npope"],
+  "codeowners": ["@georgesak"],
   "requirements": [],
-  "version": "0.2.3"
+  "version": "0.3"
 }

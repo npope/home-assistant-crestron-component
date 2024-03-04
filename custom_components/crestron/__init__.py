@@ -174,9 +174,9 @@ class CrestronHub:
                         # Digital Join
                         if join[:1] == "d":
                             value = None
-                            if update_result == STATE_ON or update_result == "True":
+                            if update_result == STATE_ON or update_result == "True" or update_result is True:
                                 value = True
-                            elif update_result == STATE_OFF or update_result == "False":
+                            elif update_result == STATE_OFF or update_result == "False" or update_result is False:
                                 value = False
                             if value is not None:
                                 _LOGGER.debug(
@@ -203,9 +203,9 @@ class CrestronHub:
             # Digital Join
             if join[:1] == "d":
                 value = None
-                if result == STATE_ON or result == "True":
+                if result == STATE_ON or result == "True" or result is True:
                     value = True
-                elif result == STATE_OFF or result == "False":
+                elif result == STATE_OFF or result == "False" or result is False:
                     value = False
                 if value is not None:
                     _LOGGER.debug(
@@ -214,16 +214,12 @@ class CrestronHub:
                     self.hub.set_digital(int(join[1:]), value)
             # Analog Join
             if join[:1] == "a":
-                if result != "None":
-                    _LOGGER.debug(
-                        f"sync_joins_to_hub setting analog join {int(join[1:])} to {int(result)}"
-                    )
+                if result != "None" and result is not None:
+                    _LOGGER.debug(f"sync_joins_to_hub setting analog join {int(join[1:])} to {int(result)}")
                     self.hub.set_analog(int(join[1:]), int(result))
             # Serial Join
             if join[:1] == "s":
-                if result != "None":
-                    _LOGGER.debug(
-                        f"sync_joins_to_hub setting serial join {int(join[1:])} to {str(result)}"
-                    )
+                if result != "None" and result is not None:
+                    _LOGGER.debug(f"sync_joins_to_hub setting serial join {int(join[1:])} to {str(result)}")
                     self.hub.set_serial(int(join[1:]), str(result))
 
