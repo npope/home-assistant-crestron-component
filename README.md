@@ -23,8 +23,8 @@ For example, you can set this on a button to trigger a change of analgo join 52 
 Note: Make sure to set the Xsig option to 2 (propagates all data, even if the same value for a signal is received multiple times) otherwise setting the same value consecutively will not work.
 
 # Improvements to the media player
-- Added volume up/down functiosn that pulse a digital join.
-- Changed the mute function to be a toggle that pulses a digital join. This better suits my project.
+- Added volume up/down functions that pulse a digital join
+- Changed the mute function to be a toggle that pulses a digital join. This better suits my project
 
 # Improvements to lights
 - Change the divider to 257, allowing full range (0-255 -> 0-65535)
