@@ -27,7 +27,7 @@ Note: Make sure to set the Xsig option to 2 (propagates all data, even if the sa
 - Changed the mute function to be a toggle that pulses a digital join. This better suits my project.
 
 # Improvements to lights
-- Change the divider to 257, allowing full range (0-255 -> -=65535)
+- Change the divider to 257, allowing full range (0-255 -> 0-65535)
 - Add an default brightness per light (otherwise default to 50%)
 
 # How to run more than one instance
