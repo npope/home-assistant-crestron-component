@@ -2,6 +2,8 @@
 
 Fork based on the great work by npope@, all credit to the original author. Please refer to the original README for more details on how to use this.
 
+I updated the version to 0.3 to ensure continuity with the original project (which seems abandoned).
+
 Below are the changes I added:
 
 # Manually setting joins
