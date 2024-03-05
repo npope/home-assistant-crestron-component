@@ -71,6 +71,7 @@ class CrestronRoom(MediaPlayerEntity):
         self._volume_join = config.get(CONF_VOLUME_JOIN)
         self._source_number_join = config.get(CONF_SOURCE_NUM_JOIN)
         self._sources = config.get(CONF_SOURCES)
+        self._unique_id =  f"{self._hub}_media_{self._name}"
 
     async def async_added_to_hass(self):
         self._hub.register_callback(self.process_callback)
@@ -127,6 +128,10 @@ class CrestronRoom(MediaPlayerEntity):
     @property
     def volume_level(self):
         return self._hub.get_analog(self._volume_join) / 65535
+
+    @property
+    def unique_id(self):
+        return self._unique_id
 
     async def async_mute_volume(self, mute):
         self._hub.set_digital(self._mute_join, 1)

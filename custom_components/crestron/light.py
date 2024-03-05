@@ -33,6 +33,7 @@ class CrestronLight(LightEntity):
         self._default_brightness = config.get(CONF_BRIGHTNESS_DEFAULT)
         if config.get(CONF_TYPE) == "brightness":
             self._supported_features = SUPPORT_BRIGHTNESS
+        self._unique_id =  f"{self._hub}_light_{self._name}"
 
     async def async_added_to_hass(self):
         self._hub.register_callback(self.process_callback)
@@ -71,6 +72,10 @@ class CrestronLight(LightEntity):
                 return True
             else:
                 return False
+
+    @property
+    def unique_id(self):
+        return self._unique_id
 
     async def async_turn_on(self, **kwargs):
         if "brightness" in kwargs:

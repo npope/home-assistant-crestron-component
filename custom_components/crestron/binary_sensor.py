@@ -32,6 +32,7 @@ class CrestronBinarySensor(Entity):
         self._name = config.get(CONF_NAME)
         self._join = config.get(CONF_IS_ON_JOIN)
         self._device_class = config.get(CONF_DEVICE_CLASS)
+        self._unique_id =  f"{hub}_binary_sensor_{config.get(CONF_NAME)}"
 
     async def async_added_to_hass(self):
         self._hub.register_callback(self.process_callback)
@@ -64,3 +65,7 @@ class CrestronBinarySensor(Entity):
             return STATE_ON
         else:
             return STATE_OFF
+
+    @property
+    def unique_id(self):
+        return self._unique_id

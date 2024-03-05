@@ -36,6 +36,7 @@ class CrestronSensor(Entity):
         self._device_class = config.get(CONF_DEVICE_CLASS)
         self._unit_of_measurement = config.get(CONF_UNIT_OF_MEASUREMENT)
         self._divisor = config.get(CONF_DIVISOR, 1)
+        self._unique_id =  f"{self._hub}_sensor_{self._name}"
 
     async def async_added_to_hass(self):
         self._hub.register_callback(self.process_callback)
@@ -69,3 +70,7 @@ class CrestronSensor(Entity):
     @property
     def unit_of_measurement(self):
         return self._unit_of_measurement
+
+    @property
+    def unique_id(self):
+        return self._unique_id
