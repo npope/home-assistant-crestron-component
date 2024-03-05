@@ -9,7 +9,7 @@ Below are the changes I added:
 # Manually setting joins
 Added crestron.set_(digital/analog/serial) to allow manually setting the value of a join from automation.
 
-For example, you can set this on a button to trigger a change of analgo join 52 to value 2 when the button is pressed:
+For example, you can set this on a button to trigger a change of analog join 52 to value 2 when the button is pressed:
 
 ```yaml
   tap_action:
