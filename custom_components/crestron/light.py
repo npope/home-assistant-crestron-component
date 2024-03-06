@@ -4,6 +4,7 @@ import logging
 
 import homeassistant.helpers.config_validation as cv
 from homeassistant.components.light import LightEntity, SUPPORT_BRIGHTNESS
+from homeassistant.util import slugify
 from homeassistant.const import CONF_NAME, CONF_TYPE
 from .const import HUB, DOMAIN, CONF_BRIGHTNESS_JOIN, CONF_BRIGHTNESS_DEFAULT
 
@@ -33,7 +34,7 @@ class CrestronLight(LightEntity):
         self._default_brightness = config.get(CONF_BRIGHTNESS_DEFAULT)
         if config.get(CONF_TYPE) == "brightness":
             self._supported_features = SUPPORT_BRIGHTNESS
-        self._unique_id =  f"{self._hub}_light_{self._name}"
+        self._unique_id = slugify(f"{DOMAIN}_light_{self._name}")
 
     async def async_added_to_hass(self):
         self._hub.register_callback(self.process_callback)

@@ -2,8 +2,9 @@
 
 import voluptuous as vol
 import logging
-
 import homeassistant.helpers.config_validation as cv
+from homeassistant.util import slugify
+
 from homeassistant.components.media_player import (
     MediaPlayerEntity,
     SUPPORT_SELECT_SOURCE,
@@ -71,7 +72,7 @@ class CrestronRoom(MediaPlayerEntity):
         self._volume_join = config.get(CONF_VOLUME_JOIN)
         self._source_number_join = config.get(CONF_SOURCE_NUM_JOIN)
         self._sources = config.get(CONF_SOURCES)
-        self._unique_id =  f"{self._hub}_media_{self._name}"
+        self._unique_id = slugify(f"{DOMAIN}_media_player_{self._name}")
 
     async def async_added_to_hass(self):
         self._hub.register_callback(self.process_callback)
