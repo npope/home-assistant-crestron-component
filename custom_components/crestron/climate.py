@@ -19,7 +19,7 @@ from homeassistant.components.climate.const import (
     FAN_ON,
     FAN_AUTO,
 )
-
+from homeassistant.util import slugify
 from homeassistant.const import CONF_NAME
 
 from .const import (
@@ -99,6 +99,7 @@ class CrestronThermostat(ClimateEntity):
         self._c1_join = config[CONF_C1_JOIN]
         self._c2_join = config.get(CONF_C2_JOIN)
         self._fa_join = config[CONF_FA_JOIN]
+        self._unique_id = slugify(f"{DOMAIN}_climate_{self._name}")
 
     async def async_added_to_hass(self):
         self._hub.register_callback(self.process_callback)
@@ -175,6 +176,10 @@ class CrestronThermostat(ClimateEntity):
             return CURRENT_HVAC_COOL
         else:
             return CURRENT_HVAC_IDLE
+
+    @property
+    def unique_id(self):
+        return self._unique_id
 
     async def async_set_hvac_mode(self, hvac_mode):
         if hvac_mode == HVAC_MODE_HEAT_COOL:

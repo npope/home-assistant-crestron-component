@@ -5,6 +5,7 @@ import logging
 
 import homeassistant.helpers.config_validation as cv
 from homeassistant.components.switch import SwitchEntity
+from homeassistant.util import slugify
 from homeassistant.const import STATE_ON, STATE_OFF, CONF_NAME, CONF_DEVICE_CLASS
 from .const import HUB, DOMAIN, CONF_SWITCH_JOIN
 
@@ -31,6 +32,7 @@ class CrestronSwitch(SwitchEntity):
         self._name = config.get(CONF_NAME)
         self._switch_join = config.get(CONF_SWITCH_JOIN)
         self._device_class = config.get(CONF_DEVICE_CLASS, "switch")
+        self._unique_id = slugify(f"{DOMAIN}_switch_{self._name}")
 
     async def async_added_to_hass(self):
         self._hub.register_callback(self.process_callback)
@@ -67,6 +69,10 @@ class CrestronSwitch(SwitchEntity):
     @property
     def is_on(self):
         return self._hub.get_digital(self._switch_join)
+
+    @property
+    def unique_id(self):
+        return self._unique_id
 
     async def async_turn_on(self, **kwargs):
         self._hub.set_digital(self._switch_join, True)

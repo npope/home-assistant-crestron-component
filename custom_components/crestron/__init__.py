@@ -24,7 +24,7 @@ from homeassistant.const import (
 )
 
 from .crestron import CrestronXsig
-from .const import CONF_PORT, HUB, DOMAIN, CONF_JOIN, CONF_SCRIPT, CONF_TO_HUB, CONF_FROM_HUB
+from .const import CONF_PORT, HUB, DOMAIN, CONF_JOIN, CONF_SCRIPT, CONF_TO_HUB, CONF_FROM_HUB, CONF_VALUE_JOIN, CONF_SET_DIGITAL, CONF_SET_ANALOG, CONF_SET_SERIAL
 #from .control_surface_sync import ControlSurfaceSync
 
 _LOGGER = logging.getLogger(__name__)
@@ -56,6 +56,27 @@ CONFIG_SCHEMA = vol.Schema(
         )
     },
     extra=vol.ALLOW_EXTRA,
+)
+
+SET_DIGITAL_SCHEME = vol.Schema(
+    {
+        vol.Required(CONF_JOIN): cv.positive_int,
+        vol.Required(CONF_VALUE_JOIN): cv.boolean
+    }
+)
+
+SET_ANALOG_SCHEME = vol.Schema(
+    {
+        vol.Required(CONF_JOIN): cv.positive_int,
+        vol.Required(CONF_VALUE_JOIN): int
+    }
+)
+
+SET_SERIAL_SCHEME = vol.Schema(
+    {
+        vol.Required(CONF_JOIN): cv.positive_int,
+        vol.Required(CONF_VALUE_JOIN): cv.string
+    }
 )
 
 PLATFORMS = [
@@ -124,6 +145,45 @@ class CrestronHub:
             self.from_hub = config[CONF_FROM_HUB]
             self.hub.register_callback(self.join_change_callback)
 
+        async def async_set_digital(call):
+            _LOGGER.debug(
+                f"async_service_callback setting digital join {call.data[CONF_JOIN]} to {call.data[CONF_VALUE_JOIN]}"
+            )
+            self.hub.set_digital(call.data[CONF_JOIN], call.data[CONF_VALUE_JOIN])
+
+        self.hass.services.async_register(
+            DOMAIN,
+            CONF_SET_DIGITAL,
+            async_set_digital,
+            schema=SET_DIGITAL_SCHEME,
+        )
+
+        async def async_set_analog(call):
+            _LOGGER.debug(
+                f"async_service_callback setting analog join {call.data[CONF_JOIN]} to {call.data[CONF_VALUE_JOIN]}"
+            )
+            self.hub.set_analog(call.data[CONF_JOIN], call.data[CONF_VALUE_JOIN])
+
+        self.hass.services.async_register(
+            DOMAIN,
+            CONF_SET_ANALOG,
+            async_set_analog,
+            schema=SET_ANALOG_SCHEME,
+        )
+
+        async def async_set_serial(call):
+            _LOGGER.debug(
+                f"async_service_callback setting serial join {call.data[CONF_JOIN]} to {call.data[CONF_VALUE_JOIN]}"
+            )
+            self.hub.set_serial(call.data[CONF_JOIN], str(call.data[CONF_VALUE_JOIN]))
+
+        self.hass.services.async_register(
+            DOMAIN,
+            CONF_SET_SERIAL,
+            async_set_serial,
+            schema=SET_SERIAL_SCHEME,
+        )
+
     async def start(self):
         await self.hub.listen(self.port)
 
@@ -174,9 +234,9 @@ class CrestronHub:
                         # Digital Join
                         if join[:1] == "d":
                             value = None
-                            if update_result == STATE_ON or update_result == "True":
+                            if update_result == STATE_ON or update_result == "True" or update_result is True:
                                 value = True
-                            elif update_result == STATE_OFF or update_result == "False":
+                            elif update_result == STATE_OFF or update_result == "False" or update_result is False:
                                 value = False
                             if value is not None:
                                 _LOGGER.debug(
@@ -203,9 +263,9 @@ class CrestronHub:
             # Digital Join
             if join[:1] == "d":
                 value = None
-                if result == STATE_ON or result == "True":
+                if result == STATE_ON or result == "True" or result is True:
                     value = True
-                elif result == STATE_OFF or result == "False":
+                elif result == STATE_OFF or result == "False" or result is False:
                     value = False
                 if value is not None:
                     _LOGGER.debug(
@@ -214,16 +274,12 @@ class CrestronHub:
                     self.hub.set_digital(int(join[1:]), value)
             # Analog Join
             if join[:1] == "a":
-                if result != "None":
-                    _LOGGER.debug(
-                        f"sync_joins_to_hub setting analog join {int(join[1:])} to {int(result)}"
-                    )
+                if result != "None" and result is not None:
+                    _LOGGER.debug(f"sync_joins_to_hub setting analog join {int(join[1:])} to {int(result)}")
                     self.hub.set_analog(int(join[1:]), int(result))
             # Serial Join
             if join[:1] == "s":
-                if result != "None":
-                    _LOGGER.debug(
-                        f"sync_joins_to_hub setting serial join {int(join[1:])} to {str(result)}"
-                    )
+                if result != "None" and result is not None:
+                    _LOGGER.debug(f"sync_joins_to_hub setting serial join {int(join[1:])} to {str(result)}")
                     self.hub.set_serial(int(join[1:]), str(result))
 

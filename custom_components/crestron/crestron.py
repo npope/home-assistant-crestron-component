@@ -50,12 +50,12 @@ class CrestronXsig:
         self._writer = writer
         peer = writer.get_extra_info("peername")
         _LOGGER.info(f"Control system connection from {peer}")
-        _LOGGER.debug("Sending update request")
-        writer.write(b"\xfd")
         self._available = True
         for callback in self._callbacks:
             await callback("available", "True")
 
+        _LOGGER.info("Sending update request")
+        writer.write(b"\xfd")
         connected = True
         while connected:
             data = await reader.read(1)
@@ -64,8 +64,8 @@ class CrestronXsig:
                 if data[0] == 0xFB:
                     _LOGGER.debug("Got update all joins request")
                     if self._sync_all_joins_callback is not None:
-                        await self._sync_all_joins_callback()
                         _LOGGER.debug("Calling sync-all-joins callback")
+                        await self._sync_all_joins_callback()
                 else:
                     data += await reader.read(1)
                     # Digital Join

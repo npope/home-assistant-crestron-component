@@ -6,6 +6,7 @@ import logging
 from homeassistant.helpers.entity import Entity
 from homeassistant.const import CONF_NAME, CONF_DEVICE_CLASS, CONF_UNIT_OF_MEASUREMENT
 import homeassistant.helpers.config_validation as cv
+from homeassistant.util import slugify
 
 from .const import HUB, DOMAIN, CONF_VALUE_JOIN, CONF_DIVISOR
 
@@ -36,6 +37,7 @@ class CrestronSensor(Entity):
         self._device_class = config.get(CONF_DEVICE_CLASS)
         self._unit_of_measurement = config.get(CONF_UNIT_OF_MEASUREMENT)
         self._divisor = config.get(CONF_DIVISOR, 1)
+        self._unique_id = slugify(f"{DOMAIN}_sensor_{self._name}")
 
     async def async_added_to_hass(self):
         self._hub.register_callback(self.process_callback)
@@ -69,3 +71,7 @@ class CrestronSensor(Entity):
     @property
     def unit_of_measurement(self):
         return self._unit_of_measurement
+
+    @property
+    def unique_id(self):
+        return self._unique_id
